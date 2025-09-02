@@ -39,6 +39,6 @@ Inspirado no clássico **Enduro** do Atari 2600, o jogo coloca você ao volante 
 git clone https://github.com/Jovito5s9/jogo_enduro.git
 cd jogo_enduro
 
-gcc enduro.c -lncurses
+gcc main.c -o enduro -lncurses
 ./enduro
 

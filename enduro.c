@@ -88,19 +88,32 @@ void print_carro(object obj, int is_player){
     //else attroff(COLOR_PAIR(2));
 }
 
+int quoficiente_esq(int j){
+    float lado=0;
+    quoficiente=((float)j*0.7/meio)*largura;
+    lado = (0.8*meio)-quoficiente;
+    return (int)lado;
+}
+
+int quoficiente_dir(int j){
+    float lado=0;
+    quoficiente=((float)j*0.7/meio)*largura;
+    lado = (1.2*meio)+quoficiente;
+    return (int)lado;
+}
 
 void pista(){
     attron(COLOR_PAIR(ambiente));
     for(int j=0;j<=altura;j++){
         
         curva_da_pista;
-        quoficiente=((float)j*0.7/meio)*largura;
-        for (int i=0;i<(0.8*meio)-quoficiente;i++){
+        //quoficiente=((float)j*0.7/meio)*largura;
+        for (int i=0;i<quoficiente_esq(j);i++){
             int x=curva_da_pista*i;
             move(j,x);
             addstr(" ");
         }
-        for (int i=(int)(1.2*meio)+quoficiente;i<largura;i++){
+        for (int i=(int)quoficiente_dir(j);i<largura;i++){
             int x=curva_da_pista*i;
             move(j,(x+1));
             addstr(" ");
@@ -187,6 +200,7 @@ int main(){
                 usleep(20000);
             }
             carro[i].dx=(get_random(7)-3)/3;
+            
             carro[i].x+=carro[i].dx;
             print_carro(carro[i], 0);
         }
