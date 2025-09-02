@@ -1,6 +1,4 @@
-# Aplicativo de Lista de Tarefas
-
-Este projeto é um aplicativo simples para **gerenciamento de tarefas e afazeres**, desenvolvido com foco em ajudar na organização pessoal do usuário final.
+# Enduro em C
 
 ---
 
