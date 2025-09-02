@@ -9,6 +9,7 @@ typedef struct{
     int x,y;
     float dx,dy;
     float acumulo_y;
+    int largura,altura;
 }object;
 
 long long tempo_em_ms() {
@@ -21,10 +22,13 @@ object player;
 //char carro0[]= " ██==█==██ "; sonho jogado no
 //char carro1[]= "░░ ▓███▓ ░░"; lixo, agora, eh
 //char carro2[]= "░░ ▓███▓ ░░"; apenas memoria
-char carro0[]="x=/\\=x";
-char carro1[]="H||||H";
-char carro2[]=" ---- ";
-int largura_carro = 6,altura_carro=3;
+char carro0gg[]="x=/\\=x";
+char carro1gg[]="H||||H";
+char carro2gg[]=" ---- ";
+char carro0pp[]="=--=";
+char carro1pp[]="H==H";
+int largura_carroGG = 6,altura_carroGG=3;
+int largura_carroPP = 4,altura_carroPP=2;
 int altura,largura,meio,quoficiente,ambiente=3,tempo_de_curva=500;
 float curva_da_pista=1;
 int n_carros=3;
@@ -52,30 +56,16 @@ void criar_inimigos() {
         if (carro[i].y > 0 && carro[i].y < altura) continue;
 
         int pista_esq = meio - 15;
-        int pista_dir = meio + 15 - largura_carro;
+        int pista_dir = meio + 15 - largura_carroGG;
 
         do {
             carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-        } while (abs(carro[i].x - player.x) < largura_carro);
+        } while (abs(carro[i].x - player.x) < largura_carroGG);
 
         carro[i].y = 0; 
         carro[i].dx = 0;
         carro[i].dy = 0.25;
     }
-}
-
-
-
-void print_carro(object obj, int is_player){
-    if(!is_player) attron(COLOR_PAIR(1));
-    //else attron(COLOR_PAIR(2));
-
-    mvprintw(obj.y, obj.x,"%s",carro0);
-    mvprintw(obj.y+1, obj.x,"%s",carro1);
-    mvprintw(obj.y+2, obj.x,"%s",carro2);
-
-    if(!is_player) attroff(COLOR_PAIR(1));
-    //else attroff(COLOR_PAIR(2));
 }
 
 int quoficiente_esq(int j){
@@ -92,14 +82,42 @@ int quoficiente_dir(int j){
     return (int)lado;
 }
 
+void print_carro(object obj, int is_player){
+    if(!is_player) attron(COLOR_PAIR(1));
+    //else attron(COLOR_PAIR(2));
+    if(obj.largura==largura_carroGG && obj.altura==altura_carroGG){
+    mvprintw(obj.y, obj.x,"%s",carro0gg);
+    mvprintw(obj.y+1, obj.x,"%s",carro1gg);
+    mvprintw(obj.y+2, obj.x,"%s",carro2gg);
+}else{
+    mvprintw(obj.y, obj.x+1,"%s",carro0pp);
+    mvprintw(obj.y+1, obj.x+1,"%s",carro1pp);
+}
+
+    if(!is_player) attroff(COLOR_PAIR(1));
+    //else attroff(COLOR_PAIR(2));
+}
+
 void atualizar_pos(object *obj){
     int velocidade = 2;
-    if(obj->x + (obj->dx * velocidade) >= quoficiente_esq(obj->y) && obj->x + (obj->dx * velocidade) <= quoficiente_dir(obj->y) - largura_carro){
+    if(obj->x + (obj->dx * velocidade) >= quoficiente_esq(obj->y)+1 && obj->x + (obj->dx * velocidade) <= quoficiente_dir(obj->y) - largura_carroGG){
         obj->x += obj->dx * velocidade;
     }
-    if(obj->y + (obj->dy * velocidade) >= 0 && obj->y + (obj->dy * velocidade) <= altura - altura_carro){
+    if(obj->y + (obj->dy * velocidade) >= 0 && obj->y + (obj->dy * velocidade) <= altura - altura_carroGG){
         obj->y += obj->dy * velocidade;
     }
+}
+
+void gerenciar_carro(object *obj,int is_player){
+    if(obj->y >= altura*0.3){
+        obj->largura=largura_carroGG;
+        obj->altura=altura_carroGG;
+    }else{
+        obj->largura=largura_carroPP;
+        obj->altura=altura_carroPP;
+    }
+    atualizar_pos(obj);
+    print_carro(*obj,is_player);
 }
 
 void pista(){
@@ -146,8 +164,8 @@ int main(){
     init_pair(3,COLOR_GREEN,COLOR_GREEN);
     getmaxyx(stdscr,altura,largura);
     meio=largura/2;
-    player.x=(int)meio-(largura_carro/2);
-    player.y=altura-altura_carro;
+    player.x=(int)meio-(largura_carroGG/2);
+    player.y=altura-altura_carroGG;
     long long intervalo = 800; // 1000ms = 1 segundo
     long long ultimo_tempo = tempo_em_ms();
     criar_inimigos();
@@ -161,7 +179,6 @@ int main(){
         }
         erase();
         pista();
-        print_carro(player,1);
         key=getch();
 
         if(key=='q'){
@@ -186,7 +203,7 @@ int main(){
             player.dx=0;
         }
 
-        atualizar_pos(&player);
+        gerenciar_carro(&player,1);
         for (int i = 0; i < n_carros; i++) {
             carro[i].acumulo_y+=carro[i].dy;
             if(carro[i].acumulo_y>1 || carro[i].acumulo_y<0){
@@ -195,16 +212,14 @@ int main(){
             carro[i].y += carro[i].acumulo_y;
             if (carro[i].y > altura) {
                 int pista_esq = meio - 6;
-                int pista_dir = meio + 6 - largura_carro;
+                int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-                carro[i].y = 0 * altura_carro;
+                carro[i].y = 0 * altura_carroGG;
                 usleep(20000);
             }
             carro[i].dx=(get_random(11)-5)/5;
             
-            //carro[i].x+=carro[i].dx;
-            atualizar_pos(&carro[i]);
-            print_carro(carro[i], 0);
+            gerenciar_carro(&carro[i], 0);
         }
         refresh();
 
