@@ -46,16 +46,6 @@ void curvar_pista(){
     }
 }
 
-void atualizar_pos(object *obj){
-    int velocidade = 2;
-    if(obj->x + (obj->dy * velocidade) >= 4 && obj->x + (obj->dy * velocidade) <= largura - largura_carro -4){
-        obj->x += obj->dy * velocidade;
-    }
-    if(obj->y + (obj->dx * velocidade) >= 0 && obj->y + (obj->dx * velocidade) <= altura - altura_carro){
-        obj->y += obj->dx * velocidade;
-    }
-}
-
 
 void criar_inimigos() {
     for (int i = 0; i < n_carros; i++) {
@@ -100,6 +90,16 @@ int quoficiente_dir(int j){
     quoficiente=((float)j*0.7/meio)*largura;
     lado = (1.2*meio)+quoficiente;
     return (int)lado;
+}
+
+void atualizar_pos(object *obj){
+    int velocidade = 2;
+    if(obj->x + (obj->dx * velocidade) >= quoficiente_esq(obj->y) && obj->x + (obj->dx * velocidade) <= quoficiente_dir(obj->y) - largura_carro){
+        obj->x += obj->dx * velocidade;
+    }
+    if(obj->y + (obj->dy * velocidade) >= 0 && obj->y + (obj->dy * velocidade) <= altura - altura_carro){
+        obj->y += obj->dy * velocidade;
+    }
 }
 
 void pista(){
@@ -168,21 +168,21 @@ int main(){
         }
 
         if(key==KEY_UP){
-            player.dx-=1;
-        }else if(key==KEY_DOWN){
-            player.dx+=1;
-        }
-        else{
-            player.dx=0;
-        }
-
-        if(key==KEY_LEFT){
             player.dy-=1;
-        }else if(key==KEY_RIGHT){
+        }else if(key==KEY_DOWN){
             player.dy+=1;
         }
         else{
             player.dy=0;
+        }
+
+        if(key==KEY_LEFT){
+            player.dx-=1;
+        }else if(key==KEY_RIGHT){
+            player.dx+=1;
+        }
+        else{
+            player.dx=0;
         }
 
         atualizar_pos(&player);
@@ -201,7 +201,8 @@ int main(){
             }
             carro[i].dx=(get_random(7)-3)/3;
             
-            carro[i].x+=carro[i].dx;
+            //carro[i].x+=carro[i].dx;
+            atualizar_pos(&carro[i]);
             print_carro(carro[i], 0);
         }
         refresh();
