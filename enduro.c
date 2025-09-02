@@ -6,10 +6,12 @@
 #include <sys/time.h>
 
 typedef struct{
-    int x,y;
+    float x,y;
     float dx,dy;
     float acumulo_y;
     int largura,altura;
+    int velocidade_y,velocidade_x;
+    float modificador;
 }object;
 
 long long tempo_em_ms() {
@@ -50,19 +52,22 @@ void curvar_pista(){
     }
 }
 
+void mudar_modificador(object *obj){
+    obj->modificador=get_random(3)-1;
+}
 
 void criar_inimigos() {
     for (int i = 0; i < n_carros; i++) {
         if (carro[i].y > 0 && carro[i].y < altura) continue;
 
-        int pista_esq = meio - 15;
-        int pista_dir = meio + 15 - largura_carroGG;
+        int pista_esq = meio - 10;
+        int pista_dir = meio + 10 - largura_carroGG;
 
         do {
             carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
         } while (abs(carro[i].x - player.x) < largura_carroGG);
-
-        carro[i].y = 0; 
+        mudar_modificador(&carro[i]);
+        carro[i].y = -get_random(20)*altura_carroPP; 
         carro[i].dx = 0;
         carro[i].dy = 0.25;
     }
@@ -93,18 +98,18 @@ void print_carro(object obj, int is_player){
     mvprintw(obj.y, obj.x+1,"%s",carro0pp);
     mvprintw(obj.y+1, obj.x+1,"%s",carro1pp);
 }
-
     if(!is_player) attroff(COLOR_PAIR(1));
     //else attroff(COLOR_PAIR(2));
 }
 
-void atualizar_pos(object *obj){
-    int velocidade = 2;
-    if(obj->x + (obj->dx * velocidade) >= quoficiente_esq(obj->y)+1 && obj->x + (obj->dx * velocidade) <= quoficiente_dir(obj->y) - largura_carroGG){
-        obj->x += obj->dx * velocidade;
+void atualizar_pos(object *obj,int is_player){
+    if(obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y)+1 && obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG){
+        obj->x += obj->dx * obj->velocidade_x;
     }
-    if(obj->y + (obj->dy * velocidade) >= 0 && obj->y + (obj->dy * velocidade) <= altura - altura_carroGG){
-        obj->y += obj->dy * velocidade;
+    if(obj->y + (obj->dy * obj->velocidade_y) >= 0 && obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG){
+        if(is_player){
+        obj->y += obj->dy * obj->velocidade_y;
+        }
     }
 }
 
@@ -112,11 +117,15 @@ void gerenciar_carro(object *obj,int is_player){
     if(obj->y >= altura*0.3){
         obj->largura=largura_carroGG;
         obj->altura=altura_carroGG;
+        obj->velocidade_y=1;
+        obj->velocidade_x=1;
     }else{
         obj->largura=largura_carroPP;
         obj->altura=altura_carroPP;
+        obj->velocidade_y=3;
+        obj->velocidade_x=3;
     }
-    atualizar_pos(obj);
+    atualizar_pos(obj,is_player);
     print_carro(*obj,is_player);
 }
 
@@ -166,6 +175,7 @@ int main(){
     meio=largura/2;
     player.x=(int)meio-(largura_carroGG/2);
     player.y=altura-altura_carroGG;
+    player.velocidade_x=2;
     long long intervalo = 800; // 1000ms = 1 segundo
     long long ultimo_tempo = tempo_em_ms();
     criar_inimigos();
@@ -214,10 +224,16 @@ int main(){
                 int pista_esq = meio - 6;
                 int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-                carro[i].y = 0 * altura_carroGG;
+                carro[i].y = -get_random(30)*altura_carroPP;
+                mudar_modificador(&carro[i]);
                 usleep(20000);
             }
-            carro[i].dx=(get_random(11)-5)/5;
+            int movimento=get_random(5);
+            if(movimento>2){
+                carro[i].dx=((get_random(11)-5)/5);
+            }else{
+                carro[i].dx=((get_random(11)-5)/5)+carro[i].modificador;
+            }
             
             gerenciar_carro(&carro[i], 0);
         }
