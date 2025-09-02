@@ -8,7 +8,7 @@
 typedef struct{
     int x,y;
     float dx,dy;
-    float acumulo;
+    float acumulo_y;
 }object;
 
 long long tempo_em_ms() {
@@ -174,17 +174,20 @@ int main(){
 
         atualizar_pos(&player);
         for (int i = 0; i < n_carros; i++) {
-            carro[i].acumulo+=carro[i].dy;
-            if(carro[i].acumulo>1 || carro[i].acumulo<0){
-                carro[i].acumulo=0;
+            carro[i].acumulo_y+=carro[i].dy;
+            if(carro[i].acumulo_y>1 || carro[i].acumulo_y<0){
+                carro[i].acumulo_y=0;
             }
-            carro[i].y += carro[i].acumulo;
+            carro[i].y += carro[i].acumulo_y;
             if (carro[i].y > altura) {
                 int pista_esq = meio - 10;
                 int pista_dir = meio + 10 - largura_carro;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
                 carro[i].y = 0 * altura_carro;
+                usleep(20000);
             }
+            carro[i].dx=(get_random(7)-3)/3;
+            carro[i].x+=carro[i].dx;
             print_carro(carro[i], 0);
         }
         refresh();
