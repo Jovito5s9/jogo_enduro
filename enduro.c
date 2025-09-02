@@ -140,7 +140,8 @@ int main(){
     curs_set(0);
     noecho();
     start_color();
-    init_pair(1,COLOR_RED,COLOR_BLUE);
+    use_default_colors();
+    init_pair(1,COLOR_RED,-1);
     init_pair(2,COLOR_YELLOW,COLOR_YELLOW);
     init_pair(3,COLOR_GREEN,COLOR_GREEN);
     getmaxyx(stdscr,altura,largura);
@@ -193,13 +194,13 @@ int main(){
             }
             carro[i].y += carro[i].acumulo_y;
             if (carro[i].y > altura) {
-                int pista_esq = meio - 10;
-                int pista_dir = meio + 10 - largura_carro;
+                int pista_esq = meio - 6;
+                int pista_dir = meio + 6 - largura_carro;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
                 carro[i].y = 0 * altura_carro;
                 usleep(20000);
             }
-            carro[i].dx=(get_random(7)-3)/3;
+            carro[i].dx=(get_random(11)-5)/5;
             
             //carro[i].x+=carro[i].dx;
             atualizar_pos(&carro[i]);
