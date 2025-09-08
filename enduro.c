@@ -5,6 +5,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+//fazer a curva da pista
+
 typedef struct{
     float x,y;
     float dx,dy;
