@@ -201,7 +201,7 @@ void print_carro(object obj, int is_player) {
 void atualizar_pos(object *obj, int is_player) {
     if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y) + 1 &&
         obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG) {
-        obj->x += obj->dx * obj->velocidade_x;
+        obj->x += obj->dx * obj->velocidade_x*2;
     }
     if (obj->y + (obj->dy * obj->velocidade_y) >= 0 &&
         obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG) {
