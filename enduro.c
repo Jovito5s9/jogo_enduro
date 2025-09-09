@@ -4,61 +4,172 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <math.h>
 
-typedef struct{
-    float x,y;
-    float dx,dy;
+// Estruturas
+
+typedef struct {
+    float x, y;
+    float dx, dy;
     float acumulo_y;
-    int largura,altura;
-    int velocidade_y,velocidade_x;
+    int largura, altura;
+    int velocidade_y, velocidade_x;
     float modificador;
-}object;
+} object;
 
+// Variáveis globais
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+object player;
+object carro[3];
+
+char carro0gg[] = "x=/\\=x";
+char carro1gg[] = "H||||H";
+char carro2gg[] = " ---- ";
+char carro0pp[] = "=--=";
+char carro1pp[] = "H==H";
+
+int largura_carroGG = 6, altura_carroGG = 3;
+int largura_carroPP = 4, altura_carroPP = 2;
+
+int altura, largura, meio;
+int ambiente = 3;
+int n_carros = 3;
+
+float curva_amplitude = 1.0f;          // Quanto a curva mexe
+float curva_wavelength = 50.0f;        // Comprimento atual da curva
+float curva_velocidade = 0.003f;       // Velocidade atual
+float alvo_wavelength = 50.0f;        // Comprimento desejado
+float alvo_velocidade = 0.003f;       // Velocidade desejada
+float curva_transicao_vel = 0.02f;     // Velocidade de transição
+
+float fase = 0.0f;
+
+// ------------------------------------
+// Funções utilitárias
+// ------------------------------------
 long long tempo_em_ms() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (long long)(tv.tv_sec) * 1000 + (tv.tv_usec / 1000);
 }
 
-object player;
-//char carro0[]= " ██==█==██ "; sonho jogado no
-//char carro1[]= "░░ ▓███▓ ░░"; lixo, agora, eh
-//char carro2[]= "░░ ▓███▓ ░░"; apenas memoria
-char carro0gg[]="x=/\\=x";
-char carro1gg[]="H||||H";
-char carro2gg[]=" ---- ";
-char carro0pp[]="=--=";
-char carro1pp[]="H==H";
-int largura_carroGG = 6,altura_carroGG=3;
-int largura_carroPP = 4,altura_carroPP=2;
-int altura,largura,meio,quoficiente,ambiente=3,tempo_de_curva=500;
-float curva_da_pista=1;
-int n_carros=3;
-object carro[3];
-
-int get_random(int max){
-    int x=rand() % max;
-    return x;
+int get_random(int max) {
+    return rand() % max;
 }
 
-void curvar_pista(){
-    for(int i=10;i>=0;i--){
-        //curva_da_pista=1+i/10;
-        //usleep(100000);
+// ------------------------------------
+// Curvas dinâmicas
+// ------------------------------------
+void atualizar_curva() {
+    // Transição suave entre curvas
+    curva_wavelength += (alvo_wavelength - curva_wavelength) * curva_transicao_vel;
+    curva_velocidade += (alvo_velocidade - curva_velocidade) * curva_transicao_vel;
+    fase += curva_velocidade;
+}
+
+long long ultima_grande_curva = 0;    // tempo da última curva longa
+const long long intervalo_grande_curva = 20000; // mínimo 20 segundos
+
+void gerar_grande_curva() {
+    alvo_wavelength = 150 + get_random(60); // curva bem longa
+    alvo_velocidade = 0.002f + (get_random(3) / 4000.0f);
+}
+
+
+
+void gerar_nova_curva() {
+    long long agora = tempo_em_ms();
+
+    // 5% de chance de gerar uma grande curva, se passou tempo suficiente
+    if (agora - ultima_grande_curva > intervalo_grande_curva && get_random(100) < 5) {
+        // Grande curva ainda mais intensa
+        alvo_wavelength = 150 + get_random(60);
+        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f); // mais rápida
+        curva_amplitude = 3.0f; // deslocamento maior
+        ultima_grande_curva = agora;
+        return;
     }
-    for(int i=0;i<=10;i++){
-        //curva_da_pista=1+(10-i)/10;
-        //usleep(100000);
+
+    // Caso não seja grande curva, gera curvas normais/rápidas mais intensas
+    int tipo = get_random(100);
+
+    if (tipo < 45) {
+        // 45% retas longas
+        alvo_wavelength = 70 + get_random(50);       // um pouco mais curtas
+        alvo_velocidade = 0.002f + (get_random(5) / 4000.0f);
+        curva_amplitude = 1.5f;                      // mais movimento
+    } 
+    else if (tipo < 75) {
+        // 30% curvas leves
+        alvo_wavelength = 40 + get_random(35);       // mais curtas = mais intensas
+        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f);
+        curva_amplitude = 2.0f;
+    } 
+    else if (tipo < 90) {
+        // 15% curvas fechadas
+        alvo_wavelength = 20 + get_random(20);       
+        alvo_velocidade = 0.005f + (get_random(5) / 2000.0f);
+        curva_amplitude = 2.5f;
+    } 
+    else {
+        // 10% curvas rápidas e fechadas (BEM desafiantes)
+        alvo_wavelength = 15 + get_random(10);      
+        alvo_velocidade = 0.007f + (get_random(5) / 1500.0f);
+        curva_amplitude = 3.0f;                      // intensidade máxima
     }
 }
 
-void mudar_modificador(object *obj){
-    obj->modificador=get_random(3)-1;
+
+
+
+int quoficiente_esq(int j) {
+    float offset = curva_amplitude * sinf((2.0f * M_PI * j) / curva_wavelength + fase);
+    float quoficiente = ((float)j * 0.7 / meio) * largura;
+    float lado = (0.8 * meio) - quoficiente + offset;
+    return (int)lado;
+}
+
+int quoficiente_dir(int j) {
+    float offset = curva_amplitude * sinf((2.0f * M_PI * j) / curva_wavelength + fase);
+    float quoficiente = ((float)j * 0.7 / meio) * largura;
+    float lado = (1.2 * meio) + quoficiente + offset;
+    return (int)lado;
+}
+
+void pista() {
+    attron(COLOR_PAIR(ambiente));
+    for (int j = 0; j <= altura; j++) {
+        for (int i = 0; i < quoficiente_esq(j); i++) {
+            move(j, i);
+            addstr(" ");
+        }
+        for (int i = (int)quoficiente_dir(j); i < largura; i++) {
+            move(j, (i + 1));
+            addstr(" ");
+        }
+    }
+    attroff(COLOR_PAIR(ambiente));
+
+    attron(COLOR_PAIR(2));
+    for (int i = 0; i <= altura; i++) {
+        mvprintw(i, quoficiente_esq(i), "%s", "/");
+        mvprintw(i, quoficiente_dir(i), "%s", "\\");
+    }
+    attroff(COLOR_PAIR(2));
+}
+
+void mudar_modificador(object *obj) {
+    obj->modificador = get_random(3) - 1;
 }
 
 void criar_inimigos() {
     for (int i = 0; i < n_carros; i++) {
-        if (carro[i].y > 0 && carro[i].y < altura) continue;
+        if (carro[i].y > 0 && carro[i].y < altura)
+            continue;
 
         int pista_esq = meio - 10;
         int pista_dir = meio + 10 - largura_carroGG;
@@ -66,182 +177,138 @@ void criar_inimigos() {
         do {
             carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
         } while (abs(carro[i].x - player.x) < largura_carroGG);
+
         mudar_modificador(&carro[i]);
-        carro[i].y = -get_random(20)*altura_carroPP; 
+        carro[i].y = -get_random(20) * altura_carroPP;
         carro[i].dx = 0;
         carro[i].dy = 0.25;
     }
 }
 
-int quoficiente_esq(int j){
-    float lado=0;
-    quoficiente=((float)j*0.7/meio)*largura;
-    lado = (0.8*meio)-quoficiente;
-    return (int)lado;
-}
-
-int quoficiente_dir(int j){
-    float lado=0;
-    quoficiente=((float)j*0.7/meio)*largura;
-    lado = (1.2*meio)+quoficiente;
-    return (int)lado;
-}
-
-void print_carro(object obj, int is_player){
-    if(!is_player) attron(COLOR_PAIR(1));
-    //else attron(COLOR_PAIR(2));
-    if(obj.largura==largura_carroGG && obj.altura==altura_carroGG){
-    mvprintw(obj.y, obj.x,"%s",carro0gg);
-    mvprintw(obj.y+1, obj.x,"%s",carro1gg);
-    mvprintw(obj.y+2, obj.x,"%s",carro2gg);
-}else{
-    mvprintw(obj.y, obj.x+1,"%s",carro0pp);
-    mvprintw(obj.y+1, obj.x+1,"%s",carro1pp);
-}
-    if(!is_player) attroff(COLOR_PAIR(1));
-    //else attroff(COLOR_PAIR(2));
-}
-
-void atualizar_pos(object *obj,int is_player){
-    if(obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y)+1 && obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG){
-        obj->x += obj->dx * obj->velocidade_x;
+void print_carro(object obj, int is_player) {
+    if (!is_player) attron(COLOR_PAIR(1));
+    if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
+        mvprintw(obj.y, obj.x, "%s", carro0gg);
+        mvprintw(obj.y + 1, obj.x, "%s", carro1gg);
+        mvprintw(obj.y + 2, obj.x, "%s", carro2gg);
+    } else {
+        mvprintw(obj.y, obj.x + 1, "%s", carro0pp);
+        mvprintw(obj.y + 1, obj.x + 1, "%s", carro1pp);
     }
-    if(obj->y + (obj->dy * obj->velocidade_y) >= 0 && obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG){
-        if(is_player){
-        obj->y += obj->dy * obj->velocidade_y;
+    if (!is_player) attroff(COLOR_PAIR(1));
+}
+
+void atualizar_pos(object *obj, int is_player) {
+    if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y) + 1 &&
+        obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG) {
+        obj->x += obj->dx * obj->velocidade_x*2;
+    }
+    if (obj->y + (obj->dy * obj->velocidade_y) >= 0 &&
+        obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG) {
+        if (is_player) {
+            obj->y += obj->dy * obj->velocidade_y;
         }
     }
 }
 
-void gerenciar_carro(object *obj,int is_player){
-    if(obj->y >= altura*0.3){
-        obj->largura=largura_carroGG;
-        obj->altura=altura_carroGG;
-        obj->velocidade_y=1;
-        obj->velocidade_x=1;
-    }else{
-        obj->largura=largura_carroPP;
-        obj->altura=altura_carroPP;
-        obj->velocidade_y=3;
-        obj->velocidade_x=3;
+void gerenciar_carro(object *obj, int is_player) {
+    if (obj->y >= altura * 0.3) {
+        obj->largura = largura_carroGG;
+        obj->altura = altura_carroGG;
+        obj->velocidade_y = 1;
+        obj->velocidade_x = 1;
+    } else {
+        obj->largura = largura_carroPP;
+        obj->altura = altura_carroPP;
+        obj->velocidade_y = 3;
+        obj->velocidade_x = 3;
     }
-    atualizar_pos(obj,is_player);
-    print_carro(*obj,is_player);
-}
-
-void pista(){
-    attron(COLOR_PAIR(ambiente));
-    for(int j=0;j<=altura;j++){
-        
-        curva_da_pista;
-        //quoficiente=((float)j*0.7/meio)*largura;
-        for (int i=0;i<quoficiente_esq(j);i++){
-            int x=curva_da_pista*i;
-            move(j,x);
-            addstr(" ");
-        }
-        for (int i=(int)quoficiente_dir(j);i<largura;i++){
-            int x=curva_da_pista*i;
-            move(j,(x+1));
-            addstr(" ");
-        }
-    }
-    attroff(COLOR_PAIR(ambiente));
-    attron(COLOR_PAIR(2));
-    for(int i=0;i<=altura;i++){
-        quoficiente=((float)i*0.7/meio)*largura;
-        //fazer amanha um for q print " " para usar color_pair e mudar o fundo
-        mvprintw(i,(0.8*meio)-quoficiente,"%s","/");
-        mvprintw(i,(1.2*meio)+quoficiente,"%s","\\");
-    }
-    attroff(COLOR_PAIR(2));
+    atualizar_pos(obj, is_player);
+    print_carro(*obj, is_player);
 }
 
 
-int main(){
+int main() {
     srand(time(NULL));
     int key;
+
     initscr();
-    nodelay(stdscr,true);
-    keypad(stdscr,true);
+    nodelay(stdscr, true);
+    keypad(stdscr, true);
     curs_set(0);
     noecho();
     start_color();
     use_default_colors();
-    init_pair(1,COLOR_RED,-1);
-    init_pair(2,COLOR_YELLOW,COLOR_YELLOW);
-    init_pair(3,COLOR_GREEN,COLOR_GREEN);
-    getmaxyx(stdscr,altura,largura);
-    meio=largura/2;
-    player.x=(int)meio-(largura_carroGG/2);
-    player.y=altura-altura_carroGG;
-    player.velocidade_x=2;
-    long long intervalo = 800; // 1000ms = 1 segundo
-    long long ultimo_tempo = tempo_em_ms();
+    init_pair(1, COLOR_RED, -1);
+    init_pair(2, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(3, COLOR_GREEN, COLOR_GREEN);
+
+    getmaxyx(stdscr, altura, largura);
+    meio = largura / 2;
+
+    player.x = (int)meio - (largura_carroGG / 2);
+    player.y = altura - altura_carroGG;
+    player.velocidade_x = 2;
+
     criar_inimigos();
-    while(true){
+    long long ultima_mudanca = tempo_em_ms();
+
+    while (true) {
         long long agora = tempo_em_ms();
 
-        if (agora - ultimo_tempo >= intervalo) {//agendano funcao
-            //curvar_pista();
-            //criar_inimigos();                
-            ultimo_tempo = agora;
+        // Gera nova curva a cada 8 segundos
+        if (agora - ultima_mudanca > 5000) {
+            gerar_nova_curva();
+            ultima_mudanca = agora;
         }
+
+        atualizar_curva();
+
         erase();
         pista();
-        key=getch();
 
-        if(key=='q'){
-            break;
-        }
+        key = getch();
+        if (key == 'q') break;
 
-        if(key==KEY_UP){
-            player.dy-=1;
-        }else if(key==KEY_DOWN){
-            player.dy+=1;
-        }
-        else{
-            player.dy=0;
-        }
+        if (key == KEY_UP) player.dy -= 1;
+        else if (key == KEY_DOWN) player.dy += 1;
+        else player.dy = 0;
 
-        if(key==KEY_LEFT){
-            player.dx-=1;
-        }else if(key==KEY_RIGHT){
-            player.dx+=1;
-        }
-        else{
-            player.dx=0;
-        }
+        if (key == KEY_LEFT) player.dx -= 1;
+        else if (key == KEY_RIGHT) player.dx += 1;
+        else player.dx = 0;
 
-        gerenciar_carro(&player,1);
+        gerenciar_carro(&player, 1);
+
         for (int i = 0; i < n_carros; i++) {
-            carro[i].acumulo_y+=carro[i].dy;
-            if(carro[i].acumulo_y>1 || carro[i].acumulo_y<0){
-                carro[i].acumulo_y=0;
+            carro[i].acumulo_y += carro[i].dy;
+            if (carro[i].acumulo_y > 1 || carro[i].acumulo_y < 0) {
+                carro[i].acumulo_y = 0;
             }
             carro[i].y += carro[i].acumulo_y;
+
             if (carro[i].y > altura) {
                 int pista_esq = meio - 6;
                 int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-                carro[i].y = -get_random(30)*altura_carroPP;
+                carro[i].y = -get_random(30) * altura_carroPP;
                 mudar_modificador(&carro[i]);
                 usleep(20000);
             }
-            int movimento=get_random(5);
-            if(movimento>2){
-                carro[i].dx=((get_random(11)-5)/5);
-            }else{
-                carro[i].dx=((get_random(11)-5)/5)+carro[i].modificador;
+
+            int movimento = get_random(5);
+            if (movimento > 2) {
+                carro[i].dx = ((get_random(11) - 5) / 5);
+            } else {
+                carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
             }
-            
             gerenciar_carro(&carro[i], 0);
         }
-        refresh();
 
+        refresh();
         usleep(16000);
-        
     }
+
     endwin();
     return 0;
 }
