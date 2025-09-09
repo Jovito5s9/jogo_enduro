@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
-
-//fazer a curva da pista
-//gcc enduro.c -o enduro -lncurses
-//./enduro
+#include <math.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 typedef struct{
     float x,y;
@@ -25,9 +25,6 @@ long long tempo_em_ms() {
 }
 
 object player;
-//char carro0[]= " ██==█==██ "; sonho jogado no
-//char carro1[]= "░░ ▓███▓ ░░"; lixo, agora, eh
-//char carro2[]= "░░ ▓███▓ ░░"; apenas memoria
 char carro0gg[]="x=/\\=x";
 char carro1gg[]="H||||H";
 char carro2gg[]=" ---- ";
@@ -36,10 +33,15 @@ char carro1pp[]="H==H";
 int largura_carroGG = 6,altura_carroGG=3;
 int largura_carroPP = 4,altura_carroPP=2;
 int altura,largura,meio,quoficiente,ambiente=3,tempo_de_curva=500;
-float curva_da_pista[1];
-int cont_curva=0;
+float curva_da_pista=1;
 int n_carros=3;
 object carro[3];
+
+// --- parametros da curva ---
+float *curva = NULL; // offset horizontal para cada linha
+float curva_amplitude = 12.0f;
+float curva_wavelength = 100.0f;
+float curva_speed = 0.003f;
 
 int get_random(int max){
     int x=rand() % max;
@@ -67,33 +69,46 @@ void criar_inimigos() {
     }
 }
 
+void calcular_curva(long long agora_ms){
+    float phase = agora_ms * curva_speed;
+    for(int j = 0; j <= altura; j++){
+        float perspective = 1.0f - ((float)j / (float)altura) * 0.6f;
+        float target = curva_amplitude * perspective * sinf((2.0f * M_PI * j) / curva_wavelength + phase);
+        curva[j] = curva[j] * 0.85f + target * 0.15f;
+    }
+}
+
 int quoficiente_esq(int j){
-    float lado=0;
-    quoficiente=((float)j*0.7/meio)*largura;
-    lado = (0.8*meio)-quoficiente;
+    float quof_base=((float)j*0.7f/meio)*largura;
+    float lado = (0.8f*meio)-quof_base + curva[j];
+    if(lado<0) lado=0;
     return (int)lado;
 }
 
 int quoficiente_dir(int j){
-    float lado=0;
-    quoficiente=((float)j*0.7/meio)*largura;
-    lado = (1.2*meio)+quoficiente;
+    float quof_base=((float)j*0.7f/meio)*largura;
+    float lado = (1.2f*meio)+quof_base + curva[j];
+    if(lado>largura) lado=largura;
     return (int)lado;
 }
 
 void print_carro(object obj, int is_player){
+    int ix=(int)roundf(obj.x);
+    int iy=(int)roundf(obj.y);
     if(!is_player) attron(COLOR_PAIR(1));
-    //else attron(COLOR_PAIR(2));
     if(obj.largura==largura_carroGG && obj.altura==altura_carroGG){
-    mvprintw(obj.y, obj.x,"%s",carro0gg);
-    mvprintw(obj.y+1, obj.x,"%s",carro1gg);
-    mvprintw(obj.y+2, obj.x,"%s",carro2gg);
-}else{
-    mvprintw(obj.y, obj.x+1,"%s",carro0pp);
-    mvprintw(obj.y+1, obj.x+1,"%s",carro1pp);
-}
+        if(iy>=0 && iy<altura && ix>=0 && ix+largura_carroGG<largura){
+            mvprintw(iy, ix,"%s",carro0gg);
+            mvprintw(iy+1, ix,"%s",carro1gg);
+            mvprintw(iy+2, ix,"%s",carro2gg);
+        }
+    }else{
+        if(iy>=0 && iy<altura && ix>=0 && ix+largura_carroPP<largura){
+            mvprintw(iy, ix+1,"%s",carro0pp);
+            mvprintw(iy+1, ix+1,"%s",carro1pp);
+        }
+    }
     if(!is_player) attroff(COLOR_PAIR(1));
-    //else attroff(COLOR_PAIR(2));
 }
 
 void atualizar_pos(object *obj,int is_player){
@@ -102,7 +117,7 @@ void atualizar_pos(object *obj,int is_player){
     }
     if(obj->y + (obj->dy * obj->velocidade_y) >= 0 && obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG){
         if(is_player){
-        obj->y += obj->dy * obj->velocidade_y;
+            obj->y += obj->dy * obj->velocidade_y;
         }
     }
 }
@@ -123,37 +138,30 @@ void gerenciar_carro(object *obj,int is_player){
     print_carro(*obj,is_player);
 }
 
-void curvar_pista(){
-    curva_da_pista;
-}
-
 void pista(){
     attron(COLOR_PAIR(ambiente));
     for(int j=0;j<=altura;j++){
-        
-        curva_da_pista;
-        for (int i=0;i<quoficiente_esq(j);i++){
-            int x=curva_da_pista[j]*i;
-            move(j,x);
-            addstr(" ");
+        int left=quoficiente_esq(j);
+        int right=quoficiente_dir(j);
+
+        for(int x=0;x<left && x<largura;x++){
+            mvaddch(j,x,' ');
         }
-        for (int i=(int)quoficiente_dir(j);i<largura;i++){
-            int x=curva_da_pista[j]*i;
-            move(j,(x+1));
-            addstr(" ");
+        for(int x=right+1;x<largura;x++){
+            mvaddch(j,x,' ');
         }
     }
     attroff(COLOR_PAIR(ambiente));
+
     attron(COLOR_PAIR(2));
     for(int i=0;i<=altura;i++){
-        quoficiente=((float)i*0.7/meio)*largura;
-        //fazer amanha um for q print " " para usar color_pair e mudar o fundo
-        mvprintw(i,(0.8*meio)-quoficiente,"%s","/");
-        mvprintw(i,(1.2*meio)+quoficiente,"%s","\\");
+        int le=quoficiente_esq(i);
+        int ri=quoficiente_dir(i);
+        if(le>=0 && le<largura) mvaddch(i,le,'/');
+        if(ri>=0 && ri<largura) mvaddch(i,ri,'\\');
     }
     attroff(COLOR_PAIR(2));
 }
-
 
 int main(){
     srand(time(NULL));
@@ -170,61 +178,52 @@ int main(){
     init_pair(3,COLOR_GREEN,COLOR_GREEN);
     getmaxyx(stdscr,altura,largura);
     meio=largura/2;
+
+    curva=(float*)malloc(sizeof(float)*(altura+1));
+    for(int i=0;i<=altura;i++) curva[i]=0.0f;
+
     player.x=(int)meio-(largura_carroGG/2);
     player.y=altura-altura_carroGG;
     player.velocidade_x=2;
-    long long intervalo = 8000; // 1000ms = 1 segundo
-    long long ultimo_tempo = tempo_em_ms();
-    curva_da_pista[altura];
-    for(int i=0;i<=altura;i++){
-        curva_da_pista[i]=1.0;
-    }
-    criar_inimigos();
-    while(true){
-        long long agora = tempo_em_ms();
 
-        if (agora - ultimo_tempo >= intervalo) {//agendano funcao
-            curvar_pista(&curva_da_pista);       
-            ultimo_tempo = agora;
+    long long intervalo = 800;
+    long long ultimo_tempo = tempo_em_ms();
+
+    criar_inimigos();
+
+    while(true){
+        long long agora=tempo_em_ms();
+        if(agora-ultimo_tempo>=intervalo){
+            ultimo_tempo=agora;
         }
+
+        calcular_curva(agora);
         erase();
         pista();
+
         key=getch();
+        if(key=='q') break;
 
-        if(key=='q'){
-            break;
-        }
+        if(key==KEY_UP) player.dy=-1;
+        else if(key==KEY_DOWN) player.dy=1;
+        else player.dy=0;
 
-        if(key==KEY_UP){
-            player.dy-=1;
-        }else if(key==KEY_DOWN){
-            player.dy+=1;
-        }
-        else{
-            player.dy=0;
-        }
-
-        if(key==KEY_LEFT){
-            player.dx-=1;
-        }else if(key==KEY_RIGHT){
-            player.dx+=1;
-        }
-        else{
-            player.dx=0;
-        }
+        if(key==KEY_LEFT) player.dx=-1;
+        else if(key==KEY_RIGHT) player.dx=1;
+        else player.dx=0;
 
         gerenciar_carro(&player,1);
-        for (int i = 0; i < n_carros; i++) {
+        for(int i=0;i<n_carros;i++){
             carro[i].acumulo_y+=carro[i].dy;
             if(carro[i].acumulo_y>1 || carro[i].acumulo_y<0){
                 carro[i].acumulo_y=0;
             }
             carro[i].y += carro[i].acumulo_y;
-            if (carro[i].y > altura) {
-                int pista_esq = meio - 6;
-                int pista_dir = meio + 6 - largura_carroGG;
-                carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-                carro[i].y = -get_random(30)*altura_carroPP;
+            if(carro[i].y>altura){
+                int pista_esq=meio-6;
+                int pista_dir=meio+6-largura_carroGG;
+                carro[i].x=pista_esq+get_random(pista_dir-pista_esq)+curva[0];
+                carro[i].y=-get_random(30)*altura_carroPP;
                 mudar_modificador(&carro[i]);
                 usleep(20000);
             }
@@ -234,14 +233,13 @@ int main(){
             }else{
                 carro[i].dx=((get_random(11)-5)/5)+carro[i].modificador;
             }
-            
-            gerenciar_carro(&carro[i], 0);
+            gerenciar_carro(&carro[i],0);
         }
-        refresh();
 
+        refresh();
         usleep(16000);
-        
     }
+    free(curva);
     endwin();
     return 0;
 }
