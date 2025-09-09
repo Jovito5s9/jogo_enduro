@@ -6,6 +6,8 @@
 #include <sys/time.h>
 
 //fazer a curva da pista
+//gcc enduro.c -o enduro -lncurses
+//./enduro
 
 typedef struct{
     float x,y;
@@ -34,24 +36,14 @@ char carro1pp[]="H==H";
 int largura_carroGG = 6,altura_carroGG=3;
 int largura_carroPP = 4,altura_carroPP=2;
 int altura,largura,meio,quoficiente,ambiente=3,tempo_de_curva=500;
-float curva_da_pista=1;
+float curva_da_pista[1];
+int cont_curva=0;
 int n_carros=3;
 object carro[3];
 
 int get_random(int max){
     int x=rand() % max;
     return x;
-}
-
-void curvar_pista(){
-    for(int i=10;i>=0;i--){
-        //curva_da_pista=1+i/10;
-        //usleep(100000);
-    }
-    for(int i=0;i<=10;i++){
-        //curva_da_pista=1+(10-i)/10;
-        //usleep(100000);
-    }
 }
 
 void mudar_modificador(object *obj){
@@ -131,19 +123,22 @@ void gerenciar_carro(object *obj,int is_player){
     print_carro(*obj,is_player);
 }
 
+void curvar_pista(){
+    curva_da_pista;
+}
+
 void pista(){
     attron(COLOR_PAIR(ambiente));
     for(int j=0;j<=altura;j++){
         
         curva_da_pista;
-        //quoficiente=((float)j*0.7/meio)*largura;
         for (int i=0;i<quoficiente_esq(j);i++){
-            int x=curva_da_pista*i;
+            int x=curva_da_pista[j]*i;
             move(j,x);
             addstr(" ");
         }
         for (int i=(int)quoficiente_dir(j);i<largura;i++){
-            int x=curva_da_pista*i;
+            int x=curva_da_pista[j]*i;
             move(j,(x+1));
             addstr(" ");
         }
@@ -178,15 +173,18 @@ int main(){
     player.x=(int)meio-(largura_carroGG/2);
     player.y=altura-altura_carroGG;
     player.velocidade_x=2;
-    long long intervalo = 800; // 1000ms = 1 segundo
+    long long intervalo = 8000; // 1000ms = 1 segundo
     long long ultimo_tempo = tempo_em_ms();
+    curva_da_pista[altura];
+    for(int i=0;i<=altura;i++){
+        curva_da_pista[i]=1.0;
+    }
     criar_inimigos();
     while(true){
         long long agora = tempo_em_ms();
 
         if (agora - ultimo_tempo >= intervalo) {//agendano funcao
-            //curvar_pista();
-            //criar_inimigos();                
+            curvar_pista(&curva_da_pista);       
             ultimo_tempo = agora;
         }
         erase();
