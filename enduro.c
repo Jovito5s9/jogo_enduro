@@ -71,30 +71,59 @@ void atualizar_curva() {
     fase += curva_velocidade;
 }
 
+long long ultima_grande_curva = 0;    // tempo da última curva longa
+const long long intervalo_grande_curva = 20000; // mínimo 20 segundos
+
+void gerar_grande_curva() {
+    alvo_wavelength = 150 + get_random(60); // curva bem longa
+    alvo_velocidade = 0.002f + (get_random(3) / 4000.0f);
+}
+
+
+
 void gerar_nova_curva() {
+    long long agora = tempo_em_ms();
+
+    // 5% de chance de gerar uma grande curva, se passou tempo suficiente
+    if (agora - ultima_grande_curva > intervalo_grande_curva && get_random(100) < 5) {
+        // Grande curva ainda mais intensa
+        alvo_wavelength = 150 + get_random(60);
+        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f); // mais rápida
+        curva_amplitude = 3.0f; // deslocamento maior
+        ultima_grande_curva = agora;
+        return;
+    }
+
+    // Caso não seja grande curva, gera curvas normais/rápidas mais intensas
     int tipo = get_random(100);
 
     if (tipo < 45) {
         // 45% retas longas
-        alvo_wavelength = 80 + get_random(40);
-        alvo_velocidade = 0.001f + (get_random(3) / 5000.0f);
+        alvo_wavelength = 70 + get_random(50);       // um pouco mais curtas
+        alvo_velocidade = 0.002f + (get_random(5) / 4000.0f);
+        curva_amplitude = 1.5f;                      // mais movimento
     } 
     else if (tipo < 75) {
         // 30% curvas leves
-        alvo_wavelength = 50 + get_random(25);
-        alvo_velocidade = 0.002f + (get_random(3) / 4000.0f);
+        alvo_wavelength = 40 + get_random(35);       // mais curtas = mais intensas
+        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f);
+        curva_amplitude = 2.0f;
     } 
     else if (tipo < 90) {
         // 15% curvas fechadas
-        alvo_wavelength = 25 + get_random(15);
-        alvo_velocidade = 0.004f + (get_random(3) / 3000.0f);
+        alvo_wavelength = 20 + get_random(20);       
+        alvo_velocidade = 0.005f + (get_random(5) / 2000.0f);
+        curva_amplitude = 2.5f;
     } 
     else {
         // 10% curvas rápidas e fechadas (BEM desafiantes)
-        alvo_wavelength = 18 + get_random(7);      // curvas curtíssimas
-        alvo_velocidade = 0.006f + (get_random(5) / 2000.0f); // alta velocidade
+        alvo_wavelength = 15 + get_random(10);      
+        alvo_velocidade = 0.007f + (get_random(5) / 1500.0f);
+        curva_amplitude = 3.0f;                      // intensidade máxima
     }
 }
+
+
 
 
 int quoficiente_esq(int j) {
@@ -228,7 +257,7 @@ int main() {
         long long agora = tempo_em_ms();
 
         // Gera nova curva a cada 8 segundos
-        if (agora - ultima_mudanca > 100) {
+        if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
             ultima_mudanca = agora;
         }
