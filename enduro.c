@@ -414,6 +414,15 @@ void creditos(){
         if (ch == 's' || ch == 'S'){
             return;
         }
+        if (ch == 'j' || ch == 'J'){
+            system("xdg-open https://github.com/Jovito5s9 &");
+        }
+        if (ch == 'r' || ch == 'R'){
+            system("xdg-open https://github.com/RodriSC-blip &");
+        }
+        if (ch == 'g' || ch == 'G'){
+            system("xdg-open https://github.com/Jovito5s9/jogo_enduro &");
+        }
         refresh();
     }
     
