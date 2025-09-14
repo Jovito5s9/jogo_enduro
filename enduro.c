@@ -248,8 +248,6 @@ void gerenciar_carro(object *obj, int is_player) {
 void jogo() {
     srand(time(NULL));
     int key;
-
-    initscr();
     nodelay(stdscr, true);
     keypad(stdscr, true);
     curs_set(0);
@@ -368,6 +366,9 @@ int menu() {
         attron(COLOR_PAIR(1));
         mvprintw((int)(0.65 * altura), meio - 4, "Sair [S]");
         attroff(COLOR_PAIR(1));
+
+        mvprintw(0.75*altura,meio-6,"Créditos[C]");
+        
         refresh();
 
         ch = getch();
@@ -377,15 +378,35 @@ int menu() {
         if (ch == '\n') { 
             return 1; 
         }
+        if (ch == 'c' || ch == 'C'){
+            return 2;
+        }
         usleep(16000);
     }
 }
 
+void creditos(){
+    erase();
+    getmaxyx(stdscr, altura, largura);
+    meio = largura / 2;
+    char ch;
+    while (true){
+        erase();
+        mvprintw(0.3*altura,meio-4,"Créditos");
+        mvprintw(0.5*altura,meio-18,"Programador e designer geral: Jovito.");
+        mvprintw(0.6*altura,meio-17,"Programador das fisicas: Rodrigo.");
+        mvprintw(0.8*altura,meio-17,"Colaboradores: Ricardo e Matheus.");
+        ch = getch();
+        if (ch == 's' || ch == 'S'){
+            return;
+        }
+        refresh();
+    }
+    
+}
 
-
-int main(){
+void gerenciar_telas(){
     srand(time(NULL));
-    initscr();
     nodelay(stdscr, true);
     keypad(stdscr, true);
     curs_set(0);
@@ -402,9 +423,15 @@ int main(){
         int opcao = menu();
         if (opcao == 0) break; 
         if (opcao == 1) jogo();
+        if (opcao == 2) creditos();
     }
     endwin();
-    return 0;
 }
 
+
+int main(){
+    initscr();
+    gerenciar_telas(); 
+    return 0;
+}
 
