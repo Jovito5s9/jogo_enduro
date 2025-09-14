@@ -4,8 +4,8 @@
 
 ## Descrição
 
-**Enduro** é um jogo de corrida retrô desenvolvido em **C** utilizando a biblioteca **ncurses** para renderização no terminal.  
-Inspirado no clássico **Enduro** do Atari 2600, o jogo coloca você ao volante em uma corrida sem fim, onde o objetivo é **desviar de outros carros**<!-- e **acumular a maior pontuação possível**-->.
+**Enduro** é um jogo de corrida retrô desenvolvido em **C** utilizando a biblioteca **ncurses** para graficos no terminal.  
+Inspirado no clássico **Enduro** do Atari 2600, o jogo vai colocar você ao volante em uma corrida sem fim, onde o objetivo é **desviar de outros carros** e **acumular a maior pontuação possível**.
 ---
 
 <!--## Demonstração
@@ -25,13 +25,9 @@ Inspirado no clássico **Enduro** do Atari 2600, o jogo coloca você ao volante 
 
 ---
 
-<!--### Baixar executavel
+### Baixar executavel
 
-[]()-->
-
-<!--### Pré-requisitos
-
-- Ter o []() instalado (versão xxxxx)-->
+[Baixar executavel](https://github.com/Jovito5s9/jogo_enduro/releases/download/v1.0/enduro)
 
 ### Passos para clonar o repositório
 
@@ -39,6 +35,5 @@ Inspirado no clássico **Enduro** do Atari 2600, o jogo coloca você ao volante 
 git clone https://github.com/Jovito5s9/jogo_enduro.git
 cd jogo_enduro
 
-gcc main.c -o enduro -lncurses
+gcc enduro.c -o enduro -lncurses -lm
 ./enduro
-
