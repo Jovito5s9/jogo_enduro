@@ -241,7 +241,7 @@ void gerenciar_carro(object *obj, int is_player) {
 }
 
 
-int main() {
+void jogo() {
     srand(time(NULL));
     int key;
 
@@ -334,5 +334,54 @@ int main() {
     }
 
     endwin();
+}
+
+int menu() {
+    erase();
+    getmaxyx(stdscr, altura, largura);
+    meio = largura / 2;
+
+    int ch;
+    while (true) {
+        erase();
+        mvprintw((int)(0.4 * altura), meio - 3, "ENDURO");
+        mvprintw((int)(0.6 * altura), meio - 5, "[ENTER] Jogar");
+        mvprintw((int)(0.65 * altura), meio - 5, "[Q] Sair");
+        refresh();
+
+        ch = getch();
+        if (ch == 'q' || ch == 'Q') {
+            return 0;
+        }
+        if (ch == '\n') { 
+            return 1; 
+        }
+        usleep(16000);
+    }
+}
+
+
+
+int main(){
+    srand(time(NULL));
+    initscr();
+    nodelay(stdscr, true);
+    keypad(stdscr, true);
+    curs_set(0);
+    noecho();
+    start_color();
+    use_default_colors();
+    init_pair(1, COLOR_RED, -1);
+    init_pair(2, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(3, COLOR_GREEN, COLOR_GREEN);
+
+    while (true) {
+        int opcao = menu();
+        if (opcao == 0) break; 
+        if (opcao == 1) jogo();
+    }
+    endwin();
     return 0;
 }
+
+
