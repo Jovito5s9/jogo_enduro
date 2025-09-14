@@ -367,8 +367,10 @@ int menu() {
         mvprintw((int)(0.65 * altura), meio - 4, "Sair [S]");
         attroff(COLOR_PAIR(1));
 
+        attron(COLOR_PAIR(5));
         mvprintw(0.75*altura,meio-6,"Créditos[C]");
-        
+        attroff(COLOR_PAIR(5));
+
         refresh();
 
         ch = getch();
@@ -392,10 +394,20 @@ void creditos(){
     char ch;
     while (true){
         erase();
-        mvprintw(0.3*altura,meio-4,"Créditos");
-        mvprintw(0.5*altura,meio-18,"Programador e designer geral: Jovito.");
-        mvprintw(0.6*altura,meio-17,"Programador das fisicas: Rodrigo.");
-        mvprintw(0.8*altura,meio-17,"Colaboradores: Ricardo e Matheus.");
+        for (int i=0;i<=largura;i++){
+            mvprintw(3,i,"=");
+            mvprintw(7,i,"=");
+            mvprintw(17,i,"=");
+        }
+        mvprintw(5,meio-4,"Créditos");
+        mvprintw(9,meio-18,"Programador e designer geral: Jovito.");
+        mvprintw(11,meio-17,"Programador das fisicas: Rodrigo.");
+        mvprintw(15,meio-17,"Colaboradores: Ricardo e Matheus.");
+        mvprintw(19,meio-5,"GITHUBs:");
+        mvprintw(21,meio-18,"Jovito: https://github.com/Jovito5s9");
+        mvprintw(21,meio-6,"Digite [J]");
+        mvprintw(23,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
+        mvprintw(21,meio-6,"Digite [R]");
         ch = getch();
         if (ch == 's' || ch == 'S'){
             return;
