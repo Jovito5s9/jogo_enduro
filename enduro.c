@@ -214,7 +214,11 @@ void print_carro(object obj, int is_player) {
 void atualizar_pos(object *obj, int is_player) {
     if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y) + 1 &&
         obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG) {
-        obj->x += obj->dx * obj->velocidade_x*2;
+            if (is_player) {
+                obj->x += obj->dx * obj->velocidade_x * 2;
+            }else{
+            obj->x += obj->dx * obj->velocidade_x;
+            }
     }
     if (obj->y + (obj->dy * obj->velocidade_y) >= 0 &&
         obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG) {
@@ -311,10 +315,11 @@ void jogo() {
                 usleep(20000);
             }
 
-            int movimento = get_random(7);
-            if (movimento > 2) {
+
+            int movimento = get_random(10);
+            if (movimento < 5) {
                 carro[i].dx = ((get_random(11) - 5) / 5);
-            } else {
+            } else if(movimento < 7){
                 carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
             }
             gerenciar_carro(&carro[i], 0);
