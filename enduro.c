@@ -395,19 +395,21 @@ void creditos(){
     while (true){
         erase();
         for (int i=0;i<=largura;i++){
-            mvprintw(3,i,"=");
-            mvprintw(7,i,"=");
-            mvprintw(17,i,"=");
+            mvprintw(0,i,"=");
+            mvprintw(4,i,"=");
+            mvprintw(12,i,"=");
         }
-        mvprintw(5,meio-4,"Créditos");
-        mvprintw(9,meio-18,"Programador e designer geral: Jovito.");
-        mvprintw(11,meio-17,"Programador das fisicas: Rodrigo.");
-        mvprintw(15,meio-17,"Colaboradores: Ricardo e Matheus.");
-        mvprintw(19,meio-5,"GITHUBs:");
-        mvprintw(21,meio-18,"Jovito: https://github.com/Jovito5s9");
-        mvprintw(21,meio-6,"Digite [J]");
-        mvprintw(23,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
-        mvprintw(21,meio-6,"Digite [R]");
+        mvprintw(2,meio-4,"Créditos");
+        mvprintw(6,meio-18,"Programador e designer geral: Jovito.");
+        mvprintw(8,meio-17,"Programador das fisicas: Rodrigo.");
+        mvprintw(11,meio-17,"Colaboradores: Ricardo e Matheus.");
+        mvprintw(13,meio-5,"GITHUBs:");
+        mvprintw(15,meio-18,"Jovito: https://github.com/Jovito5s9");
+        mvprintw(16,meio-7,"(Digite [J])");
+        mvprintw(18,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
+        mvprintw(19,meio-7,"(Digite [R])");
+        mvprintw(21,meio-32,"Repositório do jogo: https://github.com/Jovito5s9/jogo_enduro");
+        mvprintw(22,meio-7,"(Digite [G])");
         ch = getch();
         if (ch == 's' || ch == 'S'){
             return;
