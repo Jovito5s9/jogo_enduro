@@ -368,7 +368,7 @@ int menu() {
         attroff(COLOR_PAIR(1));
 
         attron(COLOR_PAIR(5));
-        mvprintw(0.75*altura,meio-6,"Créditos[C]");
+        mvprintw(0.75*altura,meio-6,"Créditos [C]");
         attroff(COLOR_PAIR(5));
 
         refresh();
@@ -415,13 +415,13 @@ void creditos(){
             return;
         }
         if (ch == 'j' || ch == 'J'){
-            system("xdg-open https://github.com/Jovito5s9 &");
+            system("xdg-open https://github.com/Jovito5s9 2>/dev/null");
         }
         if (ch == 'r' || ch == 'R'){
-            system("xdg-open https://github.com/RodriSC-blip &");
+            system("xdg-open https://github.com/RodriSC-blip 2>/dev/null");
         }
         if (ch == 'g' || ch == 'G'){
-            system("xdg-open https://github.com/Jovito5s9/jogo_enduro &");
+            system("xdg-open https://github.com/Jovito5s9/jogo_enduro 2>/dev/null");
         }
         refresh();
     }
