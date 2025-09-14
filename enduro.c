@@ -214,7 +214,11 @@ void print_carro(object obj, int is_player) {
 void atualizar_pos(object *obj, int is_player) {
     if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y) + 1 &&
         obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG) {
-        obj->x += obj->dx * obj->velocidade_x*2;
+            if (is_player) {
+                obj->x += obj->dx * obj->velocidade_x * 2;
+            }else{
+            obj->x += obj->dx * obj->velocidade_x;
+            }
     }
     if (obj->y + (obj->dy * obj->velocidade_y) >= 0 &&
         obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG) {
@@ -241,11 +245,9 @@ void gerenciar_carro(object *obj, int is_player) {
 }
 
 
-int main() {
+void jogo() {
     srand(time(NULL));
     int key;
-
-    initscr();
     nodelay(stdscr, true);
     keypad(stdscr, true);
     curs_set(0);
@@ -283,7 +285,7 @@ int main() {
         desenhar_linha_centro();
 
         key = getch();
-        if (key == 'q') break;
+        if (key == 's' || key == 'S') break;
 
         if (key == KEY_UP) player.dy -= 1;
         else if (key == KEY_DOWN) player.dy += 1;
@@ -311,10 +313,11 @@ int main() {
                 usleep(20000);
             }
 
-            int movimento = get_random(7);
-            if (movimento > 2) {
+
+            int movimento = get_random(10);
+            if (movimento < 5) {
                 carro[i].dx = ((get_random(11) - 5) / 5);
-            } else {
+            } else if(movimento < 7){
                 carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
             }
             gerenciar_carro(&carro[i], 0);
@@ -334,5 +337,124 @@ int main() {
     }
 
     endwin();
+}
+
+int menu() {
+    erase();
+    getmaxyx(stdscr, altura, largura);
+    meio = largura / 2;
+    char enduro1[]="####  #  #  #=_   #  #  ##*.  +##+";
+    char enduro2[]="#     #+ #  #  #  #  #  #  #  #  #";
+    char enduro3[]="###   ## #  #  #  #  #  ###   #  #";
+    char enduro4[]="#     # ##  #  #  #  #  #  #  #  #";
+    char enduro5[]="####  # +#  #=*   *##*  #  #  *##*";
+    int ch;
+    while (true) {
+        erase();
+        attron(COLOR_PAIR(5));
+        mvprintw((int)((0.1 * altura)+1), meio-17, "%s",enduro1);
+        mvprintw((int)((0.1 * altura)+2), meio-17, "%s",enduro2);
+        mvprintw((int)((0.1 * altura)+3), meio-17, "%s",enduro3);
+        mvprintw((int)((0.1 * altura)+4), meio-17, "%s",enduro4);
+        mvprintw((int)((0.1 * altura)+5), meio-17, "%s",enduro5);
+        attroff(COLOR_PAIR(5));
+
+        attron(COLOR_PAIR(4));
+        mvprintw((int)(0.55 * altura), meio - 6, "Jogar [ENTER]");
+        attroff(COLOR_PAIR(4));
+
+        attron(COLOR_PAIR(1));
+        mvprintw((int)(0.65 * altura), meio - 4, "Sair [S]");
+        attroff(COLOR_PAIR(1));
+
+        attron(COLOR_PAIR(5));
+        mvprintw(0.75*altura,meio-6,"Créditos [C]");
+        attroff(COLOR_PAIR(5));
+
+        refresh();
+
+        ch = getch();
+        if (ch == 's' || ch == 'S') {
+            return 0;
+        }
+        if (ch == '\n') { 
+            return 1; 
+        }
+        if (ch == 'c' || ch == 'C'){
+            return 2;
+        }
+        usleep(16000);
+    }
+}
+
+void creditos(){
+    erase();
+    getmaxyx(stdscr, altura, largura);
+    meio = largura / 2;
+    char ch;
+    while (true){
+        erase();
+        for (int i=0;i<=largura;i++){
+            mvprintw(0,i,"=");
+            mvprintw(4,i,"=");
+            mvprintw(12,i,"=");
+        }
+        mvprintw(2,meio-4,"Créditos");
+        mvprintw(6,meio-18,"Programador e designer geral: Jovito.");
+        mvprintw(8,meio-17,"Programador das fisicas: Rodrigo.");
+        mvprintw(11,meio-17,"Colaboradores: Ricardo e Matheus.");
+        mvprintw(13,meio-5,"GITHUBs:");
+        mvprintw(15,meio-18,"Jovito: https://github.com/Jovito5s9");
+        mvprintw(16,meio-7,"(Digite [J])");
+        mvprintw(18,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
+        mvprintw(19,meio-7,"(Digite [R])");
+        mvprintw(21,meio-32,"Repositório do jogo: https://github.com/Jovito5s9/jogo_enduro");
+        mvprintw(22,meio-7,"(Digite [G])");
+        ch = getch();
+        if (ch == 's' || ch == 'S'){
+            return;
+        }
+        if (ch == 'j' || ch == 'J'){
+            system("xdg-open https://github.com/Jovito5s9 2>/dev/null");
+        }
+        if (ch == 'r' || ch == 'R'){
+            system("xdg-open https://github.com/RodriSC-blip 2>/dev/null");
+        }
+        if (ch == 'g' || ch == 'G'){
+            system("xdg-open https://github.com/Jovito5s9/jogo_enduro 2>/dev/null");
+        }
+        refresh();
+    }
+    
+}
+
+void gerenciar_telas(){
+    srand(time(NULL));
+    nodelay(stdscr, true);
+    keypad(stdscr, true);
+    curs_set(0);
+    noecho();
+    start_color();
+    use_default_colors();
+    init_pair(1, COLOR_RED, -1);
+    init_pair(2, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(3, COLOR_GREEN, COLOR_GREEN);
+    init_pair(4, COLOR_GREEN, -1);
+    init_pair(5, COLOR_YELLOW, -1);
+
+    while (true) {
+        int opcao = menu();
+        if (opcao == 0) break; 
+        if (opcao == 1) jogo();
+        if (opcao == 2) creditos();
+    }
+    endwin();
+}
+
+
+int main(){
+    initscr();
+    gerenciar_telas(); 
     return 0;
 }
+
