@@ -344,9 +344,9 @@ int menu() {
     int ch;
     while (true) {
         erase();
-        mvprintw((int)(0.4 * altura), meio - 3, "ENDURO");
-        mvprintw((int)(0.6 * altura), meio - 5, "[ENTER] Jogar");
-        mvprintw((int)(0.65 * altura), meio - 5, "[Q] Sair");
+        mvprintw((int)(0.3 * altura), meio - 3, "ENDURO");
+        mvprintw((int)(0.55 * altura), meio - 7, "Jogar [ENTER]");
+        mvprintw((int)(0.65 * altura), meio - 5, "Sair [Q]");
         refresh();
 
         ch = getch();
