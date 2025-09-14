@@ -45,6 +45,8 @@ float curva_velocidade = 0.003f;       // Velocidade atual
 float alvo_wavelength = 50.0f;        // Comprimento desejado
 float alvo_velocidade = 0.003f;       // Velocidade desejada
 float curva_transicao_vel = 0.02f;     // Velocidade de transição
+int offset_linha = 0;
+
 
 float fase = 0.0f;
 
@@ -97,13 +99,13 @@ void gerar_nova_curva() {
     // Caso não seja grande curva, gera curvas normais/rápidas mais intensas
     int tipo = get_random(100);
 
-    if (tipo < 45) {
+    if (tipo < 30) {
         // 45% retas longas
         alvo_wavelength = 70 + get_random(50);       // um pouco mais curtas
         alvo_velocidade = 0.002f + (get_random(5) / 4000.0f);
         curva_amplitude = 1.5f;                      // mais movimento
     } 
-    else if (tipo < 75) {
+    else if (tipo < 60) {
         // 30% curvas leves
         alvo_wavelength = 40 + get_random(35);       // mais curtas = mais intensas
         alvo_velocidade = 0.003f + (get_random(5) / 3000.0f);
@@ -153,14 +155,25 @@ void pista() {
         }
     }
     attroff(COLOR_PAIR(ambiente));
-
     attron(COLOR_PAIR(2));
     for (int i = 0; i <= altura; i++) {
-        mvprintw(i, quoficiente_esq(i), "%s", "/");
-        mvprintw(i, quoficiente_dir(i), "%s", "\\");
+        mvprintw(i, quoficiente_esq(i), "%s", " ");
+        mvprintw(i, quoficiente_dir(i), "%s", " ");
     }
     attroff(COLOR_PAIR(2));
 }
+
+void desenhar_linha_centro() {
+    attron(COLOR_PAIR(2)); // amarelo
+    for (int j = 0; j < altura; j++) {
+        int centro = (quoficiente_esq(j) + quoficiente_dir(j)) / 2;
+        if ((j + offset_linha) % 6 < 3) { // tracejada, opcional
+            mvprintw(j, centro, "|");
+        }
+    }
+    attroff(COLOR_PAIR(2));
+}
+
 
 void mudar_modificador(object *obj) {
     obj->modificador = get_random(3) - 1;
@@ -245,6 +258,7 @@ int main() {
 
     getmaxyx(stdscr, altura, largura);
     meio = largura / 2;
+    int contador_de_linha=0;
 
     player.x = (int)meio - (largura_carroGG / 2);
     player.y = altura - altura_carroGG;
@@ -266,6 +280,7 @@ int main() {
 
         erase();
         pista();
+        desenhar_linha_centro();
 
         key = getch();
         if (key == 'q') break;
@@ -296,7 +311,7 @@ int main() {
                 usleep(20000);
             }
 
-            int movimento = get_random(5);
+            int movimento = get_random(7);
             if (movimento > 2) {
                 carro[i].dx = ((get_random(11) - 5) / 5);
             } else {
@@ -304,6 +319,15 @@ int main() {
             }
             gerenciar_carro(&carro[i], 0);
         }
+
+ 
+        contador_de_linha++;
+        if (contador_de_linha >= 4) { // quanto maior, mais lenta a linha
+            offset_linha--;
+            if (offset_linha <= 0) offset_linha = altura;
+            contador_de_linha = 0;
+        }
+
 
         refresh();
         usleep(16000);
