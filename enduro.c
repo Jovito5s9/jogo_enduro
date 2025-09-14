@@ -287,7 +287,7 @@ void jogo() {
         desenhar_linha_centro();
 
         key = getch();
-        if (key == 'q') break;
+        if (key == 's' || key == 'S') break;
 
         if (key == KEY_UP) player.dy -= 1;
         else if (key == KEY_DOWN) player.dy += 1;
@@ -345,17 +345,33 @@ int menu() {
     erase();
     getmaxyx(stdscr, altura, largura);
     meio = largura / 2;
-
+    char enduro1[]="####  #  #  #=_   #  #  ##*.  +##+";
+    char enduro2[]="#     #+ #  #  #  #  #  #  #  #  #";
+    char enduro3[]="###   ## #  #  #  #  #  ###   #  #";
+    char enduro4[]="#     # ##  #  #  #  #  #  #  #  #";
+    char enduro5[]="####  # +#  #=*   *##*  #  #  *##*";
     int ch;
     while (true) {
         erase();
-        mvprintw((int)(0.3 * altura), meio - 3, "ENDURO");
-        mvprintw((int)(0.55 * altura), meio - 7, "Jogar [ENTER]");
-        mvprintw((int)(0.65 * altura), meio - 5, "Sair [Q]");
+        attron(COLOR_PAIR(5));
+        mvprintw((int)((0.1 * altura)+1), meio-17, "%s",enduro1);
+        mvprintw((int)((0.1 * altura)+2), meio-17, "%s",enduro2);
+        mvprintw((int)((0.1 * altura)+3), meio-17, "%s",enduro3);
+        mvprintw((int)((0.1 * altura)+4), meio-17, "%s",enduro4);
+        mvprintw((int)((0.1 * altura)+5), meio-17, "%s",enduro5);
+        attroff(COLOR_PAIR(5));
+
+        attron(COLOR_PAIR(4));
+        mvprintw((int)(0.55 * altura), meio - 6, "Jogar [ENTER]");
+        attroff(COLOR_PAIR(4));
+
+        attron(COLOR_PAIR(1));
+        mvprintw((int)(0.65 * altura), meio - 4, "Sair [S]");
+        attroff(COLOR_PAIR(1));
         refresh();
 
         ch = getch();
-        if (ch == 'q' || ch == 'Q') {
+        if (ch == 's' || ch == 'S') {
             return 0;
         }
         if (ch == '\n') { 
@@ -379,6 +395,8 @@ int main(){
     init_pair(1, COLOR_RED, -1);
     init_pair(2, COLOR_YELLOW, COLOR_YELLOW);
     init_pair(3, COLOR_GREEN, COLOR_GREEN);
+    init_pair(4, COLOR_GREEN, -1);
+    init_pair(5, COLOR_YELLOW, -1);
 
     while (true) {
         int opcao = menu();
