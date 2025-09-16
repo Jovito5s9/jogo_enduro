@@ -284,6 +284,12 @@ void tabela_pontuacao(){
 }
 
 void print_ceu(){
+    char sol[]="     ";
+    float y=5;
+    float x= largura*dia;
+    if (x<0){
+        x=x+largura;
+    }
     if (dia>0){
         attron(COLOR_PAIR(8));
     }
@@ -292,8 +298,31 @@ void print_ceu(){
             mvprintw(j,i," ");
         }
     }
+    if (dia <= 0){ 
+        attron(COLOR_PAIR(9));
+        int estrelas = 5;
+        for(int e = 0; e < estrelas; e++){
+            int ex = get_random(largura);
+            int ey = get_random(altura_pista_minima);
+            mvprintw(ey, ex, "*");
+        }
+        attroff(COLOR_PAIR(9));
+    }
+    attroff(COLOR_PAIR(8));
     if (dia>0){
-        attroff(COLOR_PAIR(8));
+        attron(COLOR_PAIR(2));
+    }else{
+    attron(COLOR_PAIR(11));
+    }
+
+    mvprintw(y,x,"%s",sol);
+    mvprintw(y+1,x,"%s",sol);
+    mvprintw(y+1,x,"%s",sol);
+
+    if (dia>0){
+        attroff(COLOR_PAIR(2));
+    }else{
+        attroff(COLOR_PAIR(11));
     }
 }
 
@@ -332,6 +361,10 @@ void jogo() {
         atualizar_curva();
 
         count_metros+=0.1;
+        dia-=0.003;
+        if (dia<=-1){
+            dia=1;
+        }
 
         erase();
         print_ceu();
@@ -510,6 +543,9 @@ void gerenciar_telas(){
     init_pair(6, COLOR_YELLOW,COLOR_YELLOW);
     init_pair(7, COLOR_WHITE,COLOR_RED);
     init_pair(8, COLOR_BLUE, COLOR_BLUE);
+    init_pair(9, COLOR_WHITE, -1);
+    init_pair(10, COLOR_BLACK, COLOR_BLACK);
+    init_pair(11, COLOR_WHITE, COLOR_WHITE);
 
     while (true) {
         int opcao = menu();
