@@ -364,7 +364,10 @@ void jogo() {
             gerenciar_carro(&carro[i], 0);
             if (colisao(carro[i],player)){
                 refresh();
-                usleep(300000);
+                count_metros-=2;
+                carro[i].y-=10;
+                carro[i].x-=player.dx*2;
+                player.dx+=carro[i].dx*2;
                 break;
             }else{
                 metros_percorridos=round(count_metros);
