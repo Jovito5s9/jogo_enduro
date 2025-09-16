@@ -115,19 +115,40 @@ void gerar_nova_curva() {
 
 
 
-
 int quoficiente_esq(int j) {
-    float offset = curva_amplitude * sinf((2.0f * M_PI * j) / curva_wavelength + fase);
-    float quoficiente = ((float)j * 0.7 / meio) * largura;
-    float lado = (0.8 * meio) - quoficiente + offset;
-    return (int)lado;
+    int jl = j;
+    if (altura_pista_max > altura_pista_minima) {
+        if (jl < altura_pista_minima) jl = altura_pista_minima;
+        if (jl > altura_pista_max) jl = altura_pista_max;
+    }
+    float local_j = (float)(jl - altura_pista_minima);
+    float track_h = (float)(altura_pista_max - altura_pista_minima);
+    float t = (track_h > 0.0f) ? (local_j / track_h) : 0.0f;
+    float offset_factor = 1.0f - 0.5f * t; 
+    float offset = curva_amplitude * offset_factor * sinf((2.0f * M_PI * local_j) / curva_wavelength + fase);
+    float half_road = (0.25f + 0.75f * t) * meio;
+    int left = (int)round((float)meio - half_road + offset);
+    if (left < 0) left = 0;
+    if (left >= largura) left = largura - 1;
+    return left;
 }
 
 int quoficiente_dir(int j) {
-    float offset = curva_amplitude * sinf((2.0f * M_PI * j) / curva_wavelength + fase);
-    float quoficiente = ((float)j * 0.7 / meio) * largura;
-    float lado = (1.2 * meio) + quoficiente + offset;
-    return (int)lado;
+    int jl = j;
+    if (altura_pista_max > altura_pista_minima) {
+        if (jl < altura_pista_minima) jl = altura_pista_minima;
+        if (jl > altura_pista_max) jl = altura_pista_max;
+    }
+    float local_j = (float)(jl - altura_pista_minima);
+    float track_h = (float)(altura_pista_max - altura_pista_minima);
+    float t = (track_h > 0.0f) ? (local_j / track_h) : 0.0f;
+    float offset_factor = 1.0f - 0.5f * t;
+    float offset = curva_amplitude * offset_factor * sinf((2.0f * M_PI * local_j) / curva_wavelength + fase);
+    float half_road = (0.25f + 0.75f * t) * meio;
+    int right = (int)round((float)meio + half_road + offset);
+    if (right < 0) right = 0;
+    if (right >= largura) right = largura - 1;
+    return right;
 }
 
 void pista() {
