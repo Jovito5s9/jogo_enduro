@@ -6,7 +6,6 @@
 #include <sys/time.h>
 #include <math.h>
 
-// Estruturas
 
 typedef struct {
     float x, y;
@@ -15,9 +14,9 @@ typedef struct {
     int largura, altura;
     int velocidade_y, velocidade_x;
     float modificador;
+    int pontuado;
 } object;
 
-// Variáveis globais
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -25,6 +24,8 @@ typedef struct {
 
 object player;
 object carro[3];
+
+int carros_passados=0, metros_percorridos=0;
 
 char carro0gg[] = "x=/\\=x";
 char carro1gg[] = "H||||H";
@@ -50,9 +51,6 @@ int offset_linha = 0;
 
 float fase = 0.0f;
 
-// ------------------------------------
-// Funções utilitárias
-// ------------------------------------
 long long tempo_em_ms() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -63,21 +61,17 @@ int get_random(int max) {
     return rand() % max;
 }
 
-// ------------------------------------
-// Curvas dinâmicas
-// ------------------------------------
 void atualizar_curva() {
-    // Transição suave entre curvas
     curva_wavelength += (alvo_wavelength - curva_wavelength) * curva_transicao_vel;
     curva_velocidade += (alvo_velocidade - curva_velocidade) * curva_transicao_vel;
     fase += curva_velocidade;
 }
 
-long long ultima_grande_curva = 0;    // tempo da última curva longa
-const long long intervalo_grande_curva = 20000; // mínimo 20 segundos
+long long ultima_grande_curva = 0;    
+const long long intervalo_grande_curva = 20000; 
 
 void gerar_grande_curva() {
-    alvo_wavelength = 150 + get_random(60); // curva bem longa
+    alvo_wavelength = 150 + get_random(60); 
     alvo_velocidade = 0.002f + (get_random(3) / 4000.0f);
 }
 
@@ -86,42 +80,35 @@ void gerar_grande_curva() {
 void gerar_nova_curva() {
     long long agora = tempo_em_ms();
 
-    // 5% de chance de gerar uma grande curva, se passou tempo suficiente
     if (agora - ultima_grande_curva > intervalo_grande_curva && get_random(100) < 5) {
-        // Grande curva ainda mais intensa
         alvo_wavelength = 150 + get_random(60);
-        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f); // mais rápida
-        curva_amplitude = 3.0f; // deslocamento maior
+        alvo_velocidade = 0.003f + (get_random(5) / 3000.0f); 
+        curva_amplitude = 3.0f; 
         ultima_grande_curva = agora;
         return;
     }
 
-    // Caso não seja grande curva, gera curvas normais/rápidas mais intensas
     int tipo = get_random(100);
 
     if (tipo < 30) {
-        // 45% retas longas
-        alvo_wavelength = 70 + get_random(50);       // um pouco mais curtas
+        alvo_wavelength = 70 + get_random(50);       
         alvo_velocidade = 0.002f + (get_random(5) / 4000.0f);
-        curva_amplitude = 1.5f;                      // mais movimento
+        curva_amplitude = 1.5f;                    
     } 
     else if (tipo < 60) {
-        // 30% curvas leves
-        alvo_wavelength = 40 + get_random(35);       // mais curtas = mais intensas
+        alvo_wavelength = 40 + get_random(35);      
         alvo_velocidade = 0.003f + (get_random(5) / 3000.0f);
         curva_amplitude = 2.0f;
     } 
     else if (tipo < 90) {
-        // 15% curvas fechadas
         alvo_wavelength = 20 + get_random(20);       
         alvo_velocidade = 0.005f + (get_random(5) / 2000.0f);
         curva_amplitude = 2.5f;
     } 
     else {
-        // 10% curvas rápidas e fechadas (BEM desafiantes)
         alvo_wavelength = 15 + get_random(10);      
         alvo_velocidade = 0.007f + (get_random(5) / 1500.0f);
-        curva_amplitude = 3.0f;                      // intensidade máxima
+        curva_amplitude = 3.0f;                  
     }
 }
 
@@ -195,6 +182,7 @@ void criar_inimigos() {
         carro[i].y = -get_random(20) * altura_carroPP;
         carro[i].dx = 0;
         carro[i].dy = 0.25;
+        carro[i].pontuado=0;
     }
 }
 
@@ -317,6 +305,7 @@ void jogo() {
                 carro[i].y = -get_random(30) * altura_carroPP;
                 mudar_modificador(&carro[i]);
                 usleep(20000);
+                carro[i].pontuado=0;
             }
 
 
@@ -330,10 +319,13 @@ void jogo() {
             if (colisao(carro[i],player)){
                 printf("colidiuuuu");
             }
+            else if (carro[i].pontuado==0 && carro[i].y>= player.y + player.altura){
+                carros_passados+=1;
+                printf("%d",carros_passados);
+            }
         }
- 
         contador_de_linha++;
-        if (contador_de_linha >= 4) { // quanto maior, mais lenta a linha
+        if (contador_de_linha >= 4) { 
             offset_linha--;
             if (offset_linha <= 0) offset_linha = altura;
             contador_de_linha = 0;
