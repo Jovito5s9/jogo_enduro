@@ -321,7 +321,7 @@ void jogo() {
                 carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
             }
             gerenciar_carro(&carro[i], 0);
-        }
+        } 
 
  
         contador_de_linha++;
