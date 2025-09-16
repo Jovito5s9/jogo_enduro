@@ -238,6 +238,9 @@ void atualizar_pos(object *obj, int is_player) {
             obj->y += obj->dy * obj->velocidade_y;
         }
     }
+    if (is_player && (obj->x > largura-15 || obj->x < 12)){
+        obj->x+=obj->dx*-7;
+    }
 }
 
 void gerenciar_carro(object *obj, int is_player) {
@@ -264,13 +267,18 @@ int colisao(object obj1,object obj2){
 }
 
 void tabela_pontuacao(){
-    for (int i=0;i<=largura;i++){
+    for (int i=meio-20;i<=meio+20;i++){
         for (int j= altura_pista_max;j<=altura;j++){
             attron(COLOR_PAIR(6));
             mvprintw(j,i," ");
             attroff(COLOR_PAIR(6));
         }
     }
+    attron(COLOR_PAIR(7));
+    mvprintw(altura-3,meio-4,"q|_|p %d ",carros_passados);
+    mvprintw(altura-2,meio-4," _|_     ");
+    mvprintw(altura-5,meio-5,"%d metros",metros_percorridos);
+    attroff(COLOR_PAIR(7));
 }
 
 void jogo() {
@@ -298,15 +306,16 @@ void jogo() {
 
     criar_inimigos();
     long long ultima_mudanca = tempo_em_ms();
-
+    float count_metros=0;
     while (true) {
         long long agora = tempo_em_ms();
         if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
             ultima_mudanca = agora;
         }
-
         atualizar_curva();
+
+        count_metros+=0.01;
 
         erase();
         pista();
@@ -334,6 +343,8 @@ void jogo() {
             carro[i].y += carro[i].acumulo_y;
 
             if (carro[i].y + carro[i].altura > altura_pista_max) {
+                carros_passados+=1;
+                carro[i].pontuado = 1;
                 int pista_esq = meio - 6;
                 int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
@@ -352,14 +363,11 @@ void jogo() {
             }
             gerenciar_carro(&carro[i], 0);
             if (colisao(carro[i],player)){
-                printf("COLISÃO!");
                 refresh();
                 usleep(300000);
                 break;
-            }
-            if (carro[i].pontuado==0 && carro[i].y >= player.y + player.altura){
-                carros_passados+=1;
-                carro[i].pontuado = 1;
+            }else{
+                metros_percorridos=round(count_metros);
             }
         }
         contador_de_linha++;
@@ -480,6 +488,7 @@ void gerenciar_telas(){
     init_pair(4, COLOR_GREEN, -1);
     init_pair(5, COLOR_YELLOW, -1);
     init_pair(6, COLOR_YELLOW,COLOR_YELLOW);
+    init_pair(7, COLOR_WHITE,COLOR_RED);
 
     while (true) {
         int opcao = menu();
