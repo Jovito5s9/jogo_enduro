@@ -209,16 +209,18 @@ void criar_inimigos() {
 }
 
 void print_carro(object obj, int is_player) {
-    if (!is_player) attron(COLOR_PAIR(1));
-    if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
-        mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
-        mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
-        mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
-    } else {
-        mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
-        mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
+    if (obj.y>=altura_pista_minima){
+        if (!is_player) attron(COLOR_PAIR(1));
+        if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
+            mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
+            mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
+            mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
+        } else {
+            mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
+            mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
+        }
+        if (!is_player) attroff(COLOR_PAIR(1));
     }
-    if (!is_player) attroff(COLOR_PAIR(1));
 }
 
 void atualizar_pos(object *obj, int is_player) {
@@ -261,6 +263,16 @@ int colisao(object obj1,object obj2){
     return 0;
 }
 
+void tabela_pontuacao(){
+    for (int i=0;i<=largura;i++){
+        for (int j= altura_pista_max;j<=altura;j++){
+            attron(COLOR_PAIR(6));
+            mvprintw(j,i," ");
+            attroff(COLOR_PAIR(6));
+        }
+    }
+}
+
 void jogo() {
     srand(time(NULL));
     int key;
@@ -298,6 +310,7 @@ void jogo() {
 
         erase();
         pista();
+        tabela_pontuacao();
         desenhar_linha_centro();
 
         key = getch();
@@ -320,7 +333,7 @@ void jogo() {
             }
             carro[i].y += carro[i].acumulo_y;
 
-            if (carro[i].y > altura_pista_max) {
+            if (carro[i].y + carro[i].altura > altura_pista_max) {
                 int pista_esq = meio - 6;
                 int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
@@ -466,6 +479,7 @@ void gerenciar_telas(){
     init_pair(3, COLOR_GREEN, COLOR_GREEN);
     init_pair(4, COLOR_GREEN, -1);
     init_pair(5, COLOR_YELLOW, -1);
+    init_pair(6, COLOR_YELLOW,COLOR_YELLOW);
 
     while (true) {
         int opcao = menu();
