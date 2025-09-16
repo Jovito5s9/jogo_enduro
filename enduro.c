@@ -337,7 +337,7 @@ void jogo() {
     }
 
     endwin();
-}
+} 
 
 int menu() {
     erase();
