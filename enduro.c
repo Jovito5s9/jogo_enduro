@@ -244,6 +244,12 @@ void gerenciar_carro(object *obj, int is_player) {
     print_carro(*obj, is_player);
 }
 
+int colisao(object obj1,object obj2){
+    if (obj1.x < obj2.x + obj2.largura && obj1.x + obj1.largura > obj2.x && obj1.y < obj2.y + obj2.altura && obj1.y + obj1.altura > obj2.y) {
+        return 1;
+    }
+    return 0;
+}
 
 void jogo() {
     srand(time(NULL));
@@ -321,8 +327,10 @@ void jogo() {
                 carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
             }
             gerenciar_carro(&carro[i], 0);
+            if (colisao(carro[i],player)){
+                printf("colidiuuuu");
+            }
         }
-
  
         contador_de_linha++;
         if (contador_de_linha >= 4) { // quanto maior, mais lenta a linha
