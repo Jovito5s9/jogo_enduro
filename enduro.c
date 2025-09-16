@@ -33,12 +33,14 @@ char carro2gg[] = " ---- ";
 char carro0pp[] = "=--=";
 char carro1pp[] = "H==H";
 
+float dia =1.0;
+
 int largura_carroGG = 6, altura_carroGG = 3;
 int largura_carroPP = 4, altura_carroPP = 2;
 
 int altura, largura, meio;
 int altura_pista_minima = 0, altura_pista_max = 0;
-int ambiente = 3;
+int ambiente=3;
 int n_carros = 3;
 
 float curva_amplitude = 1.0f;          // Quanto a curva mexe
@@ -275,10 +277,24 @@ void tabela_pontuacao(){
         }
     }
     attron(COLOR_PAIR(7));
-    mvprintw(altura-3,meio-4,"q|_|p %d ",carros_passados);
-    mvprintw(altura-2,meio-4," _|_     ");
+    mvprintw(altura-3,meio-5,"q|_|p %d ",carros_passados);
+    mvprintw(altura-2,meio-5," _|_     ");
     mvprintw(altura-5,meio-5,"%d metros",metros_percorridos);
     attroff(COLOR_PAIR(7));
+}
+
+void print_ceu(){
+    if (dia>0){
+        attron(COLOR_PAIR(8));
+    }
+    for (int j=altura_pista_minima-1;j>=0;j--){
+        for(int i=0;i<=largura;i++){
+            mvprintw(j,i," ");
+        }
+    }
+    if (dia>0){
+        attroff(COLOR_PAIR(8));
+    }
 }
 
 void jogo() {
@@ -318,6 +334,7 @@ void jogo() {
         count_metros+=0.1;
 
         erase();
+        print_ceu();
         pista();
         tabela_pontuacao();
         desenhar_linha_centro();
@@ -492,6 +509,7 @@ void gerenciar_telas(){
     init_pair(5, COLOR_YELLOW, -1);
     init_pair(6, COLOR_YELLOW,COLOR_YELLOW);
     init_pair(7, COLOR_WHITE,COLOR_RED);
+    init_pair(8, COLOR_BLUE, COLOR_BLUE);
 
     while (true) {
         int opcao = menu();
