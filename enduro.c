@@ -37,6 +37,7 @@ int largura_carroGG = 6, altura_carroGG = 3;
 int largura_carroPP = 4, altura_carroPP = 2;
 
 int altura, largura, meio;
+int altura_pista_minima = 0, altura_pista_max = 0;
 int ambiente = 3;
 int n_carros = 3;
 
@@ -131,7 +132,7 @@ int quoficiente_dir(int j) {
 
 void pista() {
     attron(COLOR_PAIR(ambiente));
-    for (int j = 0; j <= altura; j++) {
+    for (int j = altura_pista_minima; j <= altura_pista_max; j++) {
         for (int i = 0; i < quoficiente_esq(j); i++) {
             move(j, i);
             addstr(" ");
@@ -143,7 +144,7 @@ void pista() {
     }
     attroff(COLOR_PAIR(ambiente));
     attron(COLOR_PAIR(2));
-    for (int i = 0; i <= altura; i++) {
+    for (int i = altura_pista_minima; i <= altura_pista_max; i++) {
         mvprintw(i, quoficiente_esq(i), "%s", " ");
         mvprintw(i, quoficiente_dir(i), "%s", " ");
     }
@@ -151,10 +152,10 @@ void pista() {
 }
 
 void desenhar_linha_centro() {
-    attron(COLOR_PAIR(2)); // amarelo
-    for (int j = 0; j < altura; j++) {
+    attron(COLOR_PAIR(2)); 
+    for (int j = altura_pista_minima; j <= altura_pista_max; j++) {
         int centro = (quoficiente_esq(j) + quoficiente_dir(j)) / 2;
-        if ((j + offset_linha) % 6 < 3) { // tracejada, opcional
+        if ((j + offset_linha) % 6 < 3) {
             mvprintw(j, centro, "|");
         }
     }
@@ -168,7 +169,7 @@ void mudar_modificador(object *obj) {
 
 void criar_inimigos() {
     for (int i = 0; i < n_carros; i++) {
-        if (carro[i].y > 0 && carro[i].y < altura)
+        if (carro[i].y > altura_pista_minima && carro[i].y < altura_pista_max)
             continue;
 
         int pista_esq = meio - 10;
@@ -179,37 +180,37 @@ void criar_inimigos() {
         } while (abs(carro[i].x - player.x) < largura_carroGG);
 
         mudar_modificador(&carro[i]);
-        carro[i].y = -get_random(20) * altura_carroPP;
+        carro[i].y = altura_pista_minima - get_random(20) * altura_carroPP;
         carro[i].dx = 0;
         carro[i].dy = 0.25;
-        carro[i].pontuado=0;
+        carro[i].pontuado = 0;
     }
 }
 
 void print_carro(object obj, int is_player) {
     if (!is_player) attron(COLOR_PAIR(1));
     if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
-        mvprintw(obj.y, obj.x, "%s", carro0gg);
-        mvprintw(obj.y + 1, obj.x, "%s", carro1gg);
-        mvprintw(obj.y + 2, obj.x, "%s", carro2gg);
+        mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
+        mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
+        mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
     } else {
-        mvprintw(obj.y, obj.x + 1, "%s", carro0pp);
-        mvprintw(obj.y + 1, obj.x + 1, "%s", carro1pp);
+        mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
+        mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
     }
     if (!is_player) attroff(COLOR_PAIR(1));
 }
 
 void atualizar_pos(object *obj, int is_player) {
-    if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq(obj->y) + 1 &&
-        obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir(obj->y) - largura_carroGG) {
+    if (obj->x + (obj->dx * obj->velocidade_x) >= quoficiente_esq((int)obj->y) + 1 &&
+        obj->x + (obj->dx * obj->velocidade_x) <= quoficiente_dir((int)obj->y) - obj->largura) {
             if (is_player) {
                 obj->x += obj->dx * obj->velocidade_x * 2;
-            }else{
-            obj->x += obj->dx * obj->velocidade_x;
+            } else {
+                obj->x += obj->dx * obj->velocidade_x;
             }
     }
-    if (obj->y + (obj->dy * obj->velocidade_y) >= 0 &&
-        obj->y + (obj->dy * obj->velocidade_y) <= altura - altura_carroGG) {
+    if (obj->y + (obj->dy * obj->velocidade_y) >= altura_pista_minima &&
+        obj->y + (obj->dy * obj->velocidade_y) <= altura_pista_max - altura_carroGG) {
         if (is_player) {
             obj->y += obj->dy * obj->velocidade_y;
         }
@@ -253,11 +254,13 @@ void jogo() {
     init_pair(3, COLOR_GREEN, COLOR_GREEN);
 
     getmaxyx(stdscr, altura, largura);
+    altura_pista_minima = (int)(altura * 0.2); 
+    altura_pista_max = altura - 6;             
     meio = largura / 2;
     int contador_de_linha=0;
 
     player.x = (int)meio - (largura_carroGG / 2);
-    player.y = altura - altura_carroGG;
+    player.y = altura_pista_max - altura_carroGG;
     player.velocidade_x = 2;
 
     criar_inimigos();
@@ -265,8 +268,6 @@ void jogo() {
 
     while (true) {
         long long agora = tempo_em_ms();
-
-        // Gera nova curva a cada 8 segundos
         if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
             ultima_mudanca = agora;
@@ -298,11 +299,11 @@ void jogo() {
             }
             carro[i].y += carro[i].acumulo_y;
 
-            if (carro[i].y > altura) {
+            if (carro[i].y > altura_pista_max) {
                 int pista_esq = meio - 6;
                 int pista_dir = meio + 6 - largura_carroGG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-                carro[i].y = -get_random(30) * altura_carroPP;
+                carro[i].y = altura_pista_minima - get_random(30) * altura_carroPP;
                 mudar_modificador(&carro[i]);
                 usleep(20000);
                 carro[i].pontuado=0;
@@ -317,17 +318,20 @@ void jogo() {
             }
             gerenciar_carro(&carro[i], 0);
             if (colisao(carro[i],player)){
-                printf("colidiuuuu");
+                printf("COLISÃO!");
+                refresh();
+                usleep(300000);
+                break;
             }
-            else if (carro[i].pontuado==0 && carro[i].y>= player.y + player.altura){
+            if (carro[i].pontuado==0 && carro[i].y >= player.y + player.altura){
                 carros_passados+=1;
-                printf("%d",carros_passados);
+                carro[i].pontuado = 1;
             }
         }
         contador_de_linha++;
         if (contador_de_linha >= 4) { 
             offset_linha--;
-            if (offset_linha <= 0) offset_linha = altura;
+            if (offset_linha <= altura_pista_minima) offset_linha = altura_pista_max;
             contador_de_linha = 0;
         }
 
@@ -457,4 +461,3 @@ int main(){
     gerenciar_telas(); 
     return 0;
 }
-
