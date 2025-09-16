@@ -315,7 +315,7 @@ void jogo() {
         }
         atualizar_curva();
 
-        count_metros+=0.01;
+        count_metros+=0.1;
 
         erase();
         pista();
