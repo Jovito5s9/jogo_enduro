@@ -214,12 +214,18 @@ void print_carro(object obj, int is_player) {
     if (obj.y>=altura_pista_minima){
         if (!is_player) attron(COLOR_PAIR(1));
         if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
-            mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
-            mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
-            mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
+            if(dia>=0 || is_player){
+                mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
+                mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
+                mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
+            }else{
+                mvprintw(obj.y+2, obj.x, " =  = ");
+            }
         } else {
-            mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
-            mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
+            if(dia>=0){
+                mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
+                mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
+            }
         }
         if (!is_player) attroff(COLOR_PAIR(1));
     }
@@ -290,6 +296,7 @@ void print_ceu(){
     if (x<0){
         x=x+largura;
     }
+    //aq
     if (dia>0){
         attron(COLOR_PAIR(8));
     }
@@ -298,9 +305,13 @@ void print_ceu(){
             mvprintw(j,i," ");
         }
     }
+    if (dia>0){
+    attroff(COLOR_PAIR(8));
+    }
+    //ate aq
     if (dia <= 0){ 
         attron(COLOR_PAIR(9));
-        int estrelas = 5;
+        int estrelas = 4;
         for(int e = 0; e < estrelas; e++){
             int ex = get_random(largura);
             int ey = get_random(altura_pista_minima);
@@ -308,7 +319,6 @@ void print_ceu(){
         }
         attroff(COLOR_PAIR(9));
     }
-    attroff(COLOR_PAIR(8));
     if (dia>0){
         attron(COLOR_PAIR(2));
     }else{
@@ -546,6 +556,7 @@ void gerenciar_telas(){
     init_pair(9, COLOR_WHITE, -1);
     init_pair(10, COLOR_BLACK, COLOR_BLACK);
     init_pair(11, COLOR_WHITE, COLOR_WHITE);
+    init_pair(12, COLOR_RED, COLOR_RED);
 
     while (true) {
         int opcao = menu();
