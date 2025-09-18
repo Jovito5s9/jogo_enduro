@@ -27,11 +27,11 @@ object carro[3];
 
 int carros_passados=0, metros_percorridos=0;
 
-char carro0gg[]="###=#####=###";
-char carro1gg[]="     ###     ";
-char carro2gg[]="###_#####_###";
-char carro3gg[]="###=#####=###";
-char carro4gg[]="### ===== ###";
+char carro0gg[]="##=#####=##";
+char carro1gg[]="    ###    ";
+char carro2gg[]="##_#####_##";
+char carro3gg[]="##=#####=##";
+char carro4gg[]="## ===== ##";
 
 char carro0g[] = "x=/\\=x";
 char carro1g[] = "H||||H";
@@ -42,7 +42,7 @@ char carro1pp[] = "H==H";
 
 float dia =1.0;
 
-int largura_carroGG = 13, altura_carroGG = 5;
+int largura_carroGG = 11, altura_carroGG = 5;
 int largura_carroG = 6, altura_carroG = 3;
 int largura_carroPP = 4, altura_carroPP = 2;
 
@@ -230,15 +230,21 @@ void print_carro(object obj, int is_player) {
                 mvprintw(obj.y+2, obj.x, " =  = ");
             }
         }else if (obj.largura==largura_carroGG && obj.altura==altura_carroGG){
+            if(dia>=0){
             mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
             mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
             mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
             mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro3gg);
             mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro4gg);
+            }else{
+                mvprintw((int)(obj.y + 2), (int)obj.x, " ###   ### ");
+            }
         }else {
             if(dia>=0){
                 mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
                 mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
+            }else{
+                mvprintw((int)(obj.y + 1), (int)(obj.x + 1), " ++ ");
             }
         }
         if (!is_player) attroff(COLOR_PAIR(1));
@@ -260,8 +266,8 @@ void atualizar_pos(object *obj, int is_player) {
             obj->y += obj->dy * obj->velocidade_y;
         }
     }
-    if (is_player && (obj->x > largura-15 || obj->x < 12)){
-        obj->x+=obj->dx*-7;
+    if (is_player && (obj->x > largura-2.8*obj->largura || obj->x < 1.8*obj->largura)){
+        obj->x+=obj->dx*-9;
     }
 }
 
@@ -273,10 +279,10 @@ void gerenciar_carro(object *obj, int is_player) {
     }
     if (t < 0.0f) t = 0.0f;
     if (t > 1.0f) t = 1.0f;
-    if (t < 0.25f) {               
+    if (t < 0.2f) {               
         obj->largura = largura_carroPP;
         obj->altura  = altura_carroPP;
-    } else if (t < 0.60f) {      
+    } else if (t < 0.5f) {      
         obj->largura = largura_carroG;
         obj->altura  = altura_carroG;
     } else {         
