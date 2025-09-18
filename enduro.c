@@ -230,7 +230,7 @@ void print_carro(object obj, int is_player) {
                 mvprintw(obj.y+2, obj.x, " =  = ");
             }
         }else if (obj.largura==largura_carroGG && obj.altura==altura_carroGG){
-            if(dia>=0){
+            if(dia>=0 || is_player){
             mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
             mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
             mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
@@ -320,12 +320,18 @@ void tabela_pontuacao(){
 
 void print_ceu(){
     char sol[]="     ";
-    float y=5;
+    float y=2;
     float x= largura*dia;
     if (x<0){
         x=x+largura;
     }
-    //aq
+    if (dia>0.9 || dia<-0.9){
+        y=2;
+    }else if (dia>0){
+        y++;
+    }else if (dia<0){
+        y--;
+    }
     if (dia>0){
         attron(COLOR_PAIR(8));
     }
@@ -337,7 +343,6 @@ void print_ceu(){
     if (dia>0){
     attroff(COLOR_PAIR(8));
     }
-    //ate aq
     if (dia <= 0){ 
         attron(COLOR_PAIR(9));
         int estrelas = 4;
