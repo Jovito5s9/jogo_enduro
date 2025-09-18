@@ -27,15 +27,23 @@ object carro[3];
 
 int carros_passados=0, metros_percorridos=0;
 
-char carro0gg[] = "x=/\\=x";
-char carro1gg[] = "H||||H";
-char carro2gg[] = " ---- ";
+char carro0gg[]="###=#####=###";
+char carro1gg[]="     ###     ";
+char carro2gg[]="###_#####_###";
+char carro3gg[]="###=#####=###";
+char carro4gg[]="### ===== ###";
+
+char carro0g[] = "x=/\\=x";
+char carro1g[] = "H||||H";
+char carro2g[] = " ---- ";
+
 char carro0pp[] = "=--=";
 char carro1pp[] = "H==H";
 
 float dia =1.0;
 
-int largura_carroGG = 6, altura_carroGG = 3;
+int largura_carroGG = 13, altura_carroGG = 5;
+int largura_carroG = 6, altura_carroG = 3;
 int largura_carroPP = 4, altura_carroPP = 2;
 
 int altura, largura, meio;
@@ -196,11 +204,11 @@ void criar_inimigos() {
             continue;
 
         int pista_esq = meio - 10;
-        int pista_dir = meio + 10 - largura_carroGG;
+        int pista_dir = meio + 10 - largura_carroG;
 
         do {
             carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
-        } while (abs(carro[i].x - player.x) < largura_carroGG);
+        } while (abs(carro[i].x - player.x) < largura_carroG);
 
         mudar_modificador(&carro[i]);
         carro[i].y = altura_pista_minima - get_random(20) * altura_carroPP;
@@ -213,15 +221,21 @@ void criar_inimigos() {
 void print_carro(object obj, int is_player) {
     if (obj.y>=altura_pista_minima){
         if (!is_player) attron(COLOR_PAIR(1));
-        if (obj.largura == largura_carroGG && obj.altura == altura_carroGG) {
+        if (obj.largura == largura_carroG && obj.altura == altura_carroG) {
             if(dia>=0 || is_player){
-                mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
-                mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
-                mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
+                mvprintw((int)obj.y, (int)obj.x, "%s", carro0g);
+                mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1g);
+                mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2g);
             }else{
                 mvprintw(obj.y+2, obj.x, " =  = ");
             }
-        } else {
+        }else if (obj.largura==largura_carroGG && obj.altura==altura_carroGG){
+            mvprintw((int)obj.y, (int)obj.x, "%s", carro0gg);
+            mvprintw((int)(obj.y + 1), (int)obj.x, "%s", carro1gg);
+            mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro2gg);
+            mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro3gg);
+            mvprintw((int)(obj.y + 2), (int)obj.x, "%s", carro4gg);
+        }else {
             if(dia>=0){
                 mvprintw((int)obj.y, (int)(obj.x + 1), "%s", carro0pp);
                 mvprintw((int)(obj.y + 1), (int)(obj.x + 1), "%s", carro1pp);
@@ -241,7 +255,7 @@ void atualizar_pos(object *obj, int is_player) {
             }
     }
     if (obj->y + (obj->dy * obj->velocidade_y) >= altura_pista_minima &&
-        obj->y + (obj->dy * obj->velocidade_y) <= altura_pista_max - altura_carroGG) {
+        obj->y + (obj->dy * obj->velocidade_y) <= altura_pista_max - largura_carroG) {
         if (is_player) {
             obj->y += obj->dy * obj->velocidade_y;
         }
@@ -252,20 +266,29 @@ void atualizar_pos(object *obj, int is_player) {
 }
 
 void gerenciar_carro(object *obj, int is_player) {
-    if (obj->y >= altura * 0.3) {
-        obj->largura = largura_carroGG;
-        obj->altura = altura_carroGG;
-        obj->velocidade_y = 1;
-        obj->velocidade_x = 1;
-    } else {
-        obj->largura = largura_carroPP;
-        obj->altura = altura_carroPP;
-        obj->velocidade_y = 3;
-        obj->velocidade_x = 3;
+    float track_h = (float)(altura_pista_max - altura_pista_minima);
+    float t = 0.0f;
+    if (track_h > 0.0f) {
+        t = ((float)(obj->y - altura_pista_minima)) / track_h;
     }
+    if (t < 0.0f) t = 0.0f;
+    if (t > 1.0f) t = 1.0f;
+    if (t < 0.25f) {               
+        obj->largura = largura_carroPP;
+        obj->altura  = altura_carroPP;
+    } else if (t < 0.60f) {      
+        obj->largura = largura_carroG;
+        obj->altura  = altura_carroG;
+    } else {         
+        obj->largura = largura_carroGG;
+        obj->altura  = altura_carroGG;
+    }
+    obj->velocidade_y = 3;
+    obj->velocidade_x = 3;
     atualizar_pos(obj, is_player);
     print_carro(*obj, is_player);
 }
+
 
 int colisao(object obj1,object obj2){
     if (obj1.x < obj2.x + obj2.largura && obj1.x + obj1.largura > obj2.x && obj1.y < obj2.y + obj2.altura && obj1.y + obj1.altura > obj2.y) {
@@ -355,8 +378,8 @@ void jogo() {
     meio = largura / 2;
     int contador_de_linha=0;
 
-    player.x = (int)meio - (largura_carroGG / 2);
-    player.y = altura_pista_max - altura_carroGG;
+    player.x = (int)meio - (largura_carroG / 2);
+    player.y = altura_pista_max - largura_carroG;
     player.velocidade_x = 2;
 
     criar_inimigos();
@@ -406,7 +429,7 @@ void jogo() {
                 carros_passados+=1;
                 carro[i].pontuado = 1;
                 int pista_esq = meio - 6;
-                int pista_dir = meio + 6 - largura_carroGG;
+                int pista_dir = meio + 6 - largura_carroG;
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
                 carro[i].y = altura_pista_minima - get_random(30) * altura_carroPP;
                 mudar_modificador(&carro[i]);
