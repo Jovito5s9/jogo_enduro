@@ -15,6 +15,7 @@ typedef struct {
     int velocidade_y, velocidade_x;
     float modificador;
     int pontuado;
+    int cor;
 } object;
 
 
@@ -50,6 +51,7 @@ int altura, largura, meio;
 int altura_pista_minima = 0, altura_pista_max = 0;
 int ambiente=3;
 int n_carros = 3;
+int cores_carros[4]={1,4,5,9};
 
 float curva_amplitude = 1.0f;          // Quanto a curva mexe
 float curva_wavelength = 50.0f;        // Comprimento atual da curva
@@ -198,6 +200,11 @@ void mudar_modificador(object *obj) {
     obj->modificador = get_random(3) - 1;
 }
 
+int mudar_cor_carro(){
+    int x = get_random(4);
+    return cores_carros[x];
+}
+
 void criar_inimigos() {
     for (int i = 0; i < n_carros; i++) {
         if (carro[i].y > altura_pista_minima && carro[i].y < altura_pista_max)
@@ -209,7 +216,7 @@ void criar_inimigos() {
         do {
             carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
         } while (abs(carro[i].x - player.x) < largura_carroG);
-
+        carro[i].cor=mudar_cor_carro();
         mudar_modificador(&carro[i]);
         carro[i].y = altura_pista_minima - get_random(20) * altura_carroPP;
         carro[i].dx = 0;
@@ -220,7 +227,11 @@ void criar_inimigos() {
 
 void print_carro(object obj, int is_player) {
     if (obj.y>=altura_pista_minima){
-        if (!is_player) attron(COLOR_PAIR(1));
+        if (is_player || dia>0) {
+            attron(COLOR_PAIR(obj.cor));
+        }else if (!is_player && dia<0){
+            attron(COLOR_PAIR(1));
+        }
         if (obj.largura == largura_carroG && obj.altura == altura_carroG) {
             if(dia>=0 || is_player){
                 mvprintw((int)obj.y, (int)obj.x, "%s", carro0g);
@@ -247,7 +258,11 @@ void print_carro(object obj, int is_player) {
                 mvprintw((int)(obj.y + 1), (int)(obj.x + 1), " ++ ");
             }
         }
-        if (!is_player) attroff(COLOR_PAIR(1));
+        if (is_player || dia>0) {
+            attroff(COLOR_PAIR(obj.cor));
+        }else if (!is_player && dia<0){
+            attron(COLOR_PAIR(1));
+        }
     }
 }
 
@@ -444,6 +459,7 @@ void jogo() {
                 carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
                 carro[i].y = altura_pista_minima - get_random(30) * altura_carroPP;
                 mudar_modificador(&carro[i]);
+                carro[i].cor=mudar_cor_carro();
                 usleep(20000);
                 carro[i].pontuado=0;
             }
