@@ -10,7 +10,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-typedef struct{
+typedef struct{  
+    
     float x,y;
     float dx,dy;
     float acumulo_y;
