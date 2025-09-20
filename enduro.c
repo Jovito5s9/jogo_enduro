@@ -34,8 +34,8 @@ char carro2gg[]="##_#####_##";
 char carro3gg[]="##=#####=##";
 char carro4gg[]="## ===== ##";
 
-char carro0g[] = "x=/\\=x";
-char carro1g[] = "H||||H";
+char carro0g[] = "X=/\\=X";
+char carro1g[] = "#||||#";
 char carro2g[] = " ---- ";
 
 char carro0pp[] = "=--=";
