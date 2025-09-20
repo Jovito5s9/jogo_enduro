@@ -41,6 +41,8 @@ char carro2g[] = " ---- ";
 char carro0pp[] = "=--=";
 char carro1pp[] = "H==H";
 
+int cores_carros[4]={1,4,5,9};
+
 float dia =1.0;
 
 int largura_carroGG = 11, altura_carroGG = 5;
@@ -49,9 +51,9 @@ int largura_carroPP = 4, altura_carroPP = 2;
 
 int altura, largura, meio;
 int altura_pista_minima = 0, altura_pista_max = 0;
-int ambiente=3;
+int ambiente=0;
+int climas[]={3,11, 6};
 int n_carros = 3;
-int cores_carros[4]={1,4,5,9};
 
 float curva_amplitude = 1.0f;          // Quanto a curva mexe
 float curva_wavelength = 50.0f;        // Comprimento atual da curva
@@ -164,7 +166,11 @@ int quoficiente_dir(int j) {
 }
 
 void pista() {
-    attron(COLOR_PAIR(ambiente));
+    if(dia>=0){
+        attron(COLOR_PAIR(climas[ambiente]));
+    }else{
+        attron(COLOR_PAIR(10));
+    }
     for (int j = altura_pista_minima; j <= altura_pista_max; j++) {
         for (int i = 0; i < quoficiente_esq(j); i++) {
             move(j, i);
@@ -175,7 +181,11 @@ void pista() {
             addstr(" ");
         }
     }
-    attroff(COLOR_PAIR(ambiente));
+    if(dia>=0){
+        attroff(COLOR_PAIR(climas[ambiente]));
+    }else{
+        attroff(COLOR_PAIR(10));
+    }
     attron(COLOR_PAIR(2));
     for (int i = altura_pista_minima; i <= altura_pista_max; i++) {
         mvprintw(i, quoficiente_esq(i), "%s", " ");
@@ -203,6 +213,14 @@ void mudar_modificador(object *obj) {
 int mudar_cor_carro(){
     int x = get_random(4);
     return cores_carros[x];
+}
+
+int mudar_clima(){
+    ambiente +=1;
+    if (ambiente==3){
+        ambiente = 0;
+    }
+    return ambiente;
 }
 
 void criar_inimigos() {
@@ -349,6 +367,8 @@ void print_ceu(){
     }
     if (dia>0){
         attron(COLOR_PAIR(8));
+    }else{
+        attron(COLOR_PAIR(10));
     }
     for (int j=altura_pista_minima-1;j>=0;j--){
         for(int i=0;i<=largura;i++){
@@ -357,6 +377,8 @@ void print_ceu(){
     }
     if (dia>0){
     attroff(COLOR_PAIR(8));
+    }else{
+        attroff(COLOR_PAIR(10));
     }
     if (dia <= 0){ 
         attron(COLOR_PAIR(9));
@@ -403,6 +425,7 @@ void jogo() {
     altura_pista_max = altura - 6;             
     meio = largura / 2;
     int contador_de_linha=0;
+    int contador_tempo=0;
 
     player.x = (int)meio - (largura_carroG / 2);
     player.y = altura_pista_max - largura_carroG;
@@ -415,6 +438,11 @@ void jogo() {
         long long agora = tempo_em_ms();
         if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
+            contador_tempo++;
+            if(contador_tempo>=3){
+                mudar_clima();
+                contador_tempo=0;
+            }
             ultima_mudanca = agora;
         }
         atualizar_curva();
