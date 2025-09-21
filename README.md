@@ -5,15 +5,17 @@
 ## Descrição
 
 **Enduro** é um jogo de corrida retrô desenvolvido em **C** utilizando a biblioteca **ncurses** para graficos no terminal.  
-Inspirado no clássico **Enduro** do Atari 2600, o jogo vai colocar você ao volante em uma corrida sem fim, onde o objetivo é **desviar de outros carros** e **acumular a maior pontuação possível**.
+Inspirado no clássico **Enduro** do Atari 2600, o jogo vai colocar você ao volante em uma corrida sem fim, onde o objetivo é **desviar de outros carros** e **acumular a maior pontuação possível** enquanto os diversas situações climáticas e temporais podem atrapalhar.
 ---
 
-<!--## Demonstração
+## Demonstração
 
 <p align="center">
-  <img src="assets/tela_inicial.jpeg" width="200" style="margin-right:10px;" />
-  <img src="assets/imagem2.jpeg" width="200" />
-</p>-->
+  <img src="assets/enduro_menu.png" width="150" style="margin-right:10px;" />
+  <img src="assets/enduro_neve.png" width="150" />
+  <img src="assets/enduro_dia.png" width="150" />
+  <img src="assets/enduro_noite.png" width="150" />
+</p>
 
 ---
 
