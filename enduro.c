@@ -43,7 +43,7 @@ char carro1pp[] = "H==H";
 
 int cores_carros[4]={1,4,5,9};
 
-float dia =1.0;
+float dia =1.0,clima=1.0;
 
 int largura_carroGG = 11, altura_carroGG = 5;
 int largura_carroG = 6, altura_carroG = 3;
@@ -407,24 +407,17 @@ void print_ceu(){
     }
 }
 
-void chuva(){
-    char gota;
-    if (ambiente==2){
-        attron(climas[ambiente]);
-        gota='*';
-    }else{
-        gota='.';
-    }
-    int gotas = 20,x,y;
-    for(int i=0;i<=gotas; i++){
-        x=get_random(largura);
-        y=get_random(altura_pista_max);
-        mvprintw(y,x,"%c",gota);
-    }
-    if (ambiente==2){
-        attroff(climas[ambiente]);
+void nevasca(){
+    char gota='*';
+    int gotas = 20, x, y;
+    for (int i = 0; i <= gotas; i++) {
+        x = get_random(largura);
+        y = get_random(altura_pista_max);
+        mvaddch(y, x, gota);
+        mvchgat(y, x, 1, A_NORMAL, 11, NULL);
     }
 }
+
 
 void jogo() {
     srand(time(NULL));
@@ -454,6 +447,9 @@ void jogo() {
     long long ultima_mudanca = tempo_em_ms();
     float count_metros=0;
     while (true) {
+
+        erase();
+
         long long agora = tempo_em_ms();
         if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
@@ -467,14 +463,17 @@ void jogo() {
         atualizar_curva();
 
         count_metros+=0.1;
+
+        print_ceu();
+        pista();
+
         dia-=0.003;
         if (dia<=-1){
             dia=1;
         }
-
-        erase();
-        print_ceu();
-        pista();
+        if (ambiente==1){
+            nevasca();
+        }
         tabela_pontuacao();
         desenhar_linha_centro();
 
