@@ -454,7 +454,7 @@ void jogo() {
         if (agora - ultima_mudanca > 5000) {
             gerar_nova_curva();
             contador_tempo++;
-            if(contador_tempo>=3){
+            if(contador_tempo>=8){
                 mudar_clima();
                 contador_tempo=0;
             }
@@ -467,7 +467,7 @@ void jogo() {
         print_ceu();
         pista();
 
-        dia-=0.003;
+        dia-=0.0007;
         if (dia<=-1){
             dia=1;
         }
