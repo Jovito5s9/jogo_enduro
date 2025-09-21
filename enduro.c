@@ -407,6 +407,25 @@ void print_ceu(){
     }
 }
 
+void chuva(){
+    char gota;
+    if (ambiente==2){
+        attron(climas[ambiente]);
+        gota='*';
+    }else{
+        gota='.';
+    }
+    int gotas = 20,x,y;
+    for(int i=0;i<=gotas; i++){
+        x=get_random(largura);
+        y=get_random(altura_pista_max);
+        mvprintw(y,x,"%c",gota);
+    }
+    if (ambiente==2){
+        attroff(climas[ambiente]);
+    }
+}
+
 void jogo() {
     srand(time(NULL));
     int key;
