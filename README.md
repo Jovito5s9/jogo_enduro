@@ -11,10 +11,10 @@ Inspirado no clássico **Enduro** do Atari 2600, o jogo vai colocar você ao vol
 ## Demonstração
 
 <p align="center">
-  <img src="assets/enduro_menu.png" width="200" style="margin-right:10px;" />
-  <img src="assets/enduro_neve.png" width="200" />
-  <img src="assets/enduro_dia.png" width="200" />
-  <img src="assets/enduro_noite.png" width="200" />
+  <img src="assets/enduro_menu.png" width="150" style="margin-right:10px;" />
+  <img src="assets/enduro_neve.png" width="150" />
+  <img src="assets/enduro_dia.png" width="150" />
+  <img src="assets/enduro_noite.png" width="150" />
 </p>
 
 ---
