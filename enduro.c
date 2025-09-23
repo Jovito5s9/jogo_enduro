@@ -1,3 +1,4 @@
+// salva como jogo_enduro_som.c
 #include <stdio.h>
 #include <ncurses.h>
 #include <unistd.h>
@@ -5,7 +6,10 @@
 #include <time.h>
 #include <sys/time.h>
 #include <math.h>
-
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 typedef struct {
     float x, y;
@@ -17,7 +21,6 @@ typedef struct {
     int pontuado;
     int cor;
 } object;
-
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -63,7 +66,6 @@ float alvo_velocidade = 0.003f;       // Velocidade desejada
 float curva_transicao_vel = 0.02f;     // Velocidade de transição
 int offset_linha = 0;
 
-
 float fase = 0.0f;
 
 long long tempo_em_ms() {
@@ -74,6 +76,127 @@ long long tempo_em_ms() {
 
 int get_random(int max) {
     return rand() % max;
+}
+
+
+static int command_exists(const char *cmd) {
+    if (!cmd) return 0;
+    char buf[256];
+    snprintf(buf, sizeof(buf), "command -v %s >/dev/null 2>&1", cmd);
+    int st = system(buf);
+    return (st == 0);
+}
+
+static void shell_quote(const char *in, char *out, size_t out_size) {
+    if (!in || !out || out_size == 0) return;
+    const char *p = in;
+    size_t used = 0;
+    if (used + 1 < out_size) {
+        out[used++] = '\'';
+    } else { out[0] = '\0'; return; }
+    while (*p && used + 4 < out_size) {
+        if (*p == '\'') {
+            if (used + 4 >= out_size) break;
+            out[used++] = '\'';
+            out[used++] = '\\';
+            out[used++] = '\'';
+            out[used++] = '\'';
+        } else {
+            out[used++] = *p;
+        }
+        p++;
+    }
+    if (used + 1 < out_size) {
+        out[used++] = '\'';
+        out[used] = '\0';
+    } else {
+        out[out_size-1] = '\0';
+    }
+}
+
+void tocar_som_file(const char *path, int background) {
+    if (!path) return;
+    if (access(path, F_OK) != 0) {
+        return;
+    }
+
+    const char *ext = strrchr(path, '.');
+    char quoted[1024];
+    shell_quote(path, quoted, sizeof(quoted));
+
+    char cmd[1200] = {0};
+
+    if (ext && strcasecmp(ext, ".wav") == 0) {
+        if (command_exists("aplay")) {
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (aplay %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "aplay %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        } else if (command_exists("play")) { 
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (play %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "play %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        }
+    } else if (ext && strcasecmp(ext, ".mp3") == 0) {
+        if (command_exists("mpg123")) {
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (mpg123 %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "mpg123 %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        } else if (command_exists("mpg321")) {
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (mpg321 %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "mpg321 %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        } else if (command_exists("play")) {
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (play %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "play %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        }
+    } else {
+        if (command_exists("play")) {
+            if (background)
+                snprintf(cmd, sizeof(cmd), " (play %s >/dev/null 2>&1) &", quoted);
+            else
+                snprintf(cmd, sizeof(cmd), "play %s >/dev/null 2>&1", quoted);
+            system(cmd);
+            return;
+        }
+    }
+    if (background)
+        snprintf(cmd, sizeof(cmd), " (%s) &", quoted);
+    else
+        snprintf(cmd, sizeof(cmd), "%s", quoted);
+    system(cmd);
+}
+
+void tocar_musica_fundo() {
+    if (access("bg.wav", F_OK) == 0) {
+        tocar_som_file("bg.wav", 1);
+    } else if (access("bg.mp3", F_OK) == 0) {
+        tocar_som_file("bg.mp3", 1);
+    } else {
+    }
+}
+
+void tocar_som_colisao() {
+    if (access("assets/colisao.wav", F_OK) == 0) {
+        tocar_som_file("assets/colisao.wav", 0);
+    } else if (access("assets/colisao.mp3", F_OK) == 0) {
+        tocar_som_file("assets/colisao.mp3", 0);
+    }
 }
 
 void atualizar_curva() {
@@ -89,8 +212,6 @@ void gerar_grande_curva() {
     alvo_wavelength = 150 + get_random(60); 
     alvo_velocidade = 0.002f + (get_random(3) / 4000.0f);
 }
-
-
 
 void gerar_nova_curva() {
     long long agora = tempo_em_ms();
@@ -126,8 +247,6 @@ void gerar_nova_curva() {
         curva_amplitude = 3.0f;                  
     }
 }
-
-
 
 int quoficiente_esq(int j) {
     int jl = j;
@@ -204,7 +323,6 @@ void desenhar_linha_centro() {
     }
     attroff(COLOR_PAIR(2));
 }
-
 
 void mudar_modificador(object *obj) {
     obj->modificador = get_random(3) - 1;
@@ -328,7 +446,6 @@ void gerenciar_carro(object *obj, int is_player) {
     print_carro(*obj, is_player);
 }
 
-
 int colisao(object obj1,object obj2){
     if (obj1.x < obj2.x + obj2.largura && obj1.x + obj1.largura > obj2.x && obj1.y < obj2.y + obj2.altura && obj1.y + obj1.altura > obj2.y) {
         return 1;
@@ -418,7 +535,6 @@ void nevasca(){
     }
 }
 
-
 void jogo() {
     srand(time(NULL));
     int key;
@@ -444,6 +560,10 @@ void jogo() {
     player.velocidade_x = 2;
 
     criar_inimigos();
+
+    // Tenta tocar música de fundo (bg.wav / bg.mp3) em background
+    tocar_musica_fundo();
+
     long long ultima_mudanca = tempo_em_ms();
     float count_metros=0;
     while (true) {
@@ -510,7 +630,6 @@ void jogo() {
                 carro[i].pontuado=0;
             }
 
-
             int movimento = get_random(10);
             if (movimento < 5) {
                 carro[i].dx = ((get_random(11) - 5) / 5);
@@ -519,6 +638,8 @@ void jogo() {
             }
             gerenciar_carro(&carro[i], 0);
             if (colisao(carro[i],player)){
+                tocar_som_colisao();
+
                 refresh();
                 count_metros-=2;
                 carro[i].y-=10;
@@ -535,7 +656,6 @@ void jogo() {
             if (offset_linha <= altura_pista_minima) offset_linha = altura_pista_max;
             contador_de_linha = 0;
         }
-
 
         refresh();
         usleep(16000);
@@ -614,7 +734,7 @@ void creditos(){
         mvprintw(18,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
         mvprintw(19,meio-7,"(Digite [R])");
         mvprintw(21,meio-32,"Repositório do jogo: https://github.com/Jovito5s9/jogo_enduro");
-        mvprintw(22,meio-7,"(Digite [G])");
+        mvprintw(22,meio-7,"(Digite [G]");
         ch = getch();
         if (ch == 's' || ch == 'S'){
             return;
@@ -662,7 +782,6 @@ void gerenciar_telas(){
     }
     endwin();
 }
-
 
 int main(){
     initscr();
