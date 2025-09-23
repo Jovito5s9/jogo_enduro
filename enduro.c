@@ -55,12 +55,12 @@ int ambiente=0;
 int climas[]={3,11, 6};
 int n_carros = 3;
 
-float curva_amplitude = 1.0f;          // Quanto a curva mexe
-float curva_wavelength = 50.0f;        // Comprimento atual da curva
-float curva_velocidade = 0.003f;       // Velocidade atual
-float alvo_wavelength = 50.0f;        // Comprimento desejado
-float alvo_velocidade = 0.003f;       // Velocidade desejada
-float curva_transicao_vel = 0.02f;     // Velocidade de transição
+float curva_amplitude = 1.0f;     
+float curva_wavelength = 50.0f;      
+float curva_velocidade = 0.003f;     
+float alvo_wavelength = 50.0f;       
+float alvo_velocidade = 0.003f;     
+float curva_transicao_vel = 0.02f;     
 int offset_linha = 0;
 
 
