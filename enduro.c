@@ -5,7 +5,10 @@
 #include <time.h>
 #include <sys/time.h>
 #include <math.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <errno.h>
 
 typedef struct {
     float x, y;
@@ -421,6 +424,16 @@ void nevasca(){
     }
 }
 
+void tocar_som_colisao() {
+    pid_t pid = fork();
+    if (pid < 0) {
+        return;
+    }
+    if (pid == 0) {
+        execlp("aplay", "aplay", "-q", "assets/colisao.wav", (char*)NULL);
+        _exit(1);
+    }
+}
 
 void jogo() {
     srand(time(NULL));
@@ -552,6 +565,7 @@ void jogo() {
                     carro[i].x-=player.dx*2;
                     player.dx+=carro[i].dx*2;
                     player_colidiu=2.0;
+                    tocar_som_colisao();
                     break;
                 }else{
                     metros_percorridos=round(count_metros);
@@ -694,6 +708,8 @@ void gerenciar_telas(){
     init_pair(10, COLOR_BLACK, COLOR_BLACK);
     init_pair(11, COLOR_WHITE, COLOR_WHITE);
     init_pair(12, COLOR_RED, COLOR_RED);
+
+    signal(SIGCHLD, SIG_IGN);
 
     while (true) {
         int opcao = menu();
