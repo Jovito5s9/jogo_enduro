@@ -453,11 +453,12 @@ void jogo() {
 
         key = getch();
         if (key == 's' || key == 'S') break;
-        if ((key == 'p' || key == 'P') && paused!=anterior_paused){
+        if ((key == 'p' || key == 'P' || key == ' ') && paused!=anterior_paused){
             paused=!paused;
             anterior_paused=key;
         }
         if (paused){
+            mvprintw(0,0,"pausado");
             usleep(16000);
             continue;
         }
