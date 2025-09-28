@@ -66,6 +66,8 @@ int offset_linha = 0;
 
 
 float fase = 0.0f;
+float player_colidiu=0.0;
+int direcao_enemy=1;
 
 long long tempo_em_ms() {
     struct timeval tv;
@@ -478,6 +480,7 @@ void jogo() {
         print_ceu();
         pista();
 
+        player_colidiu-=0.04;
         dia-=0.0007;
         if (dia<=-1){
             dia=1;
@@ -499,13 +502,17 @@ void jogo() {
         else player.dx = 0;
 
         gerenciar_carro(&player, 1);
-
         for (int i = 0; i < n_carros; i++) {
             carro[i].acumulo_y += carro[i].dy;
             if (carro[i].acumulo_y > 1 || carro[i].acumulo_y < 0) {
                 carro[i].acumulo_y = 0;
             }
-            carro[i].y += carro[i].acumulo_y;
+            if (player_colidiu>0){
+                direcao_enemy=-1;
+            }else{
+                direcao_enemy=1;
+            }
+            carro[i].y += carro[i].acumulo_y * direcao_enemy;
 
             if (carro[i].y + carro[i].altura > altura_pista_max) {
                 carros_passados+=1;
@@ -518,26 +525,49 @@ void jogo() {
                 carro[i].cor=mudar_cor_carro();
                 usleep(20000);
                 carro[i].pontuado=0;
+            }else if ((carro[i].y <altura_pista_minima)&& direcao_enemy==-1) {
+                carros_passados-=1;
+                carro[i].pontuado = 0;
+                int pista_esq = quoficiente_esq(altura_pista_max)+largura_carroGG*2;
+                int pista_dir = quoficiente_dir(altura_pista_max)-largura_carroGG*2;
+                carro[i].x = pista_esq + get_random(pista_dir - pista_esq);
+                carro[i].y = altura_pista_max-5;
+                usleep(20000);
+                carro[i].pontuado=0;
             }
 
 
-            int movimento = get_random(10);
-            if (movimento < 5) {
-                carro[i].dx = ((get_random(11) - 5) / 5);
-            } else if(movimento < 7){
-                carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
+            if (direcao_enemy==1){
+                int movimento = get_random(10);
+                if (movimento < 5) {
+                    carro[i].dx = ((get_random(11) - 5) / 5);
+                } else if(movimento < 7){
+                    carro[i].dx = ((get_random(11) - 5) / 5) + carro[i].modificador;
+                }
+                if (colisao(carro[i],player)){
+                    refresh();
+                    count_metros-=2;
+                    carro[i].y-=10;
+                    carro[i].x-=player.dx*2;
+                    player.dx+=carro[i].dx*2;
+                    player_colidiu=2.0;
+                    break;
+                }else{
+                    metros_percorridos=round(count_metros);
+                }
+            }else{
+                int movimento = get_random(10);
+                if (movimento > 5) {
+                    carro[i].dx = ((get_random(11) - 5) / 5);
+                }else{
+                    if (carro[i].x>meio){
+                        carro[i].dx=-1.5;
+                    }else{
+                        carro[i].dx=1.5;
+                    }
+                }
             }
             gerenciar_carro(&carro[i], 0);
-            if (colisao(carro[i],player)){
-                refresh();
-                count_metros-=2;
-                carro[i].y-=10;
-                carro[i].x-=player.dx*2;
-                player.dx+=carro[i].dx*2;
-                break;
-            }else{
-                metros_percorridos=round(count_metros);
-            }
         }
         contador_de_linha++;
         if (contador_de_linha >= 4) { 
