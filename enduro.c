@@ -54,6 +54,7 @@ int altura_pista_minima = 0, altura_pista_max = 0;
 int ambiente=0;
 int climas[]={3,11, 6};
 int n_carros = 3;
+int paused=0,anterior_paused=-1;
 
 float curva_amplitude = 1.0f;     
 float curva_wavelength = 50.0f;      
@@ -428,9 +429,6 @@ void jogo() {
     noecho();
     start_color();
     use_default_colors();
-    init_pair(1, COLOR_RED, -1);
-    init_pair(2, COLOR_YELLOW, COLOR_YELLOW);
-    init_pair(3, COLOR_GREEN, COLOR_GREEN);
 
     getmaxyx(stdscr, altura, largura);
     altura_pista_minima = (int)(altura * 0.2); 
@@ -438,6 +436,9 @@ void jogo() {
     meio = largura / 2;
     int contador_de_linha=0;
     int contador_tempo=0;
+    dia=1.0;
+    ambiente=0;
+    carros_passados=0;
 
     player.x = (int)meio - (largura_carroG / 2);
     player.y = altura_pista_max - largura_carroG;
@@ -448,6 +449,16 @@ void jogo() {
     float count_metros=0;
     while (true) {
 
+        key = getch();
+        if (key == 's' || key == 'S') break;
+        if ((key == 'p' || key == 'P') && paused!=anterior_paused){
+            paused=!paused;
+            anterior_paused=key;
+        }
+        if (paused){
+            usleep(16000);
+            continue;
+        }
         erase();
 
         long long agora = tempo_em_ms();
@@ -477,7 +488,6 @@ void jogo() {
         tabela_pontuacao();
         desenhar_linha_centro();
 
-        key = getch();
         if (key == 's' || key == 'S') break;
 
         if (key == KEY_UP) player.dy -= 1;
