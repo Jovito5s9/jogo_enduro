@@ -666,15 +666,21 @@ void creditos(){
         }
         mvprintw(2,meio-4,"Créditos");
         mvprintw(6,meio-18,"Programador e designer geral: Jovito.");
-        mvprintw(8,meio-17,"Programador das fisicas: Rodrigo.");
-        mvprintw(11,meio-17,"Colaboradores: Ricardo e Matheus.");
+        mvprintw(8,meio-17,"Programador dos carros: Rodrigo.");
+        mvprintw(11,meio-17,"Auxiliar na logica da pista: Matheus.");
+        mvprintw(11,meio-17,"Auxiliar na logica da pista: Ricardo.");
         mvprintw(13,meio-5,"GITHUBs:");
         mvprintw(15,meio-18,"Jovito: https://github.com/Jovito5s9");
         mvprintw(16,meio-7,"(Digite [J])");
         mvprintw(18,meio-20,"Rodrigo: https://github.com/RodriSC-blip");
         mvprintw(19,meio-7,"(Digite [R])");
-        mvprintw(21,meio-32,"Repositório do jogo: https://github.com/Jovito5s9/jogo_enduro");
-        mvprintw(22,meio-7,"(Digite [G])");
+        mvprintw(21,meio-18,"Matheus: https://github.com/Nihce3");
+        mvprintw(22,meio-7,"(Digite [M])");
+        mvprintw(24,meio-18,"Ricardo: https://github.com/Ponizan");
+        mvprintw(25,meio-7,"(Digite [P])");
+        mvprintw(27,meio-32,"Repositório do jogo: https://github.com/Jovito5s9/jogo_enduro");
+        mvprintw(28,meio-7,"(Digite [G])");
+
         ch = getch();
         if (ch == 's' || ch == 'S'){
             return;
@@ -685,6 +691,14 @@ void creditos(){
         if (ch == 'r' || ch == 'R'){
             system("xdg-open https://github.com/RodriSC-blip 2>/dev/null");
         }
+
+        if (ch == 'p' || ch == 'P'){
+            system("xdg-open https://github.com/ricardomauricio18 2>/dev/null");
+        }
+        if (ch == 'm' || ch == 'M'){
+            system("xdg-open https://github.com/Nihce3 2>/dev/null");
+        }
+
         if (ch == 'g' || ch == 'G'){
             system("xdg-open https://github.com/Jovito5s9/jogo_enduro 2>/dev/null");
         }
