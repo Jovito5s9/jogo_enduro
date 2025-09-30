@@ -415,7 +415,12 @@ void print_ceu(){
 
 void nevasca(){
     char gota='*';
-    int gotas = 20, x, y;
+    int gotas, x, y;
+    if (dia>0){
+        gotas=30;
+    }else{
+        gotas=20;
+    }
     for (int i = 0; i <= gotas; i++) {
         x = get_random(largura);
         y = get_random(altura_pista_max);
@@ -564,7 +569,7 @@ void jogo() {
                     carro[i].y-=10;
                     carro[i].x-=player.dx*2;
                     player.dx+=carro[i].dx*2;
-                    player_colidiu=2.0;
+                    player_colidiu=2.4;
                     tocar_som_colisao();
                     break;
                 }else{
